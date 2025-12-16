@@ -1,0 +1,187 @@
+import { useRoute, Link } from "wouter";
+import { bhagavadGitaData } from "@/lib/gita-data";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { ArrowLeft, Share2, Type } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState } from "react";
+import { Slider } from "@/components/ui/slider";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+
+export default function Chapter() {
+  const [match, params] = useRoute("/chapter/:id");
+  const chapterId = params ? parseInt(params.id) : 1;
+  const chapter = bhagavadGitaData.find((c) => c.id === chapterId);
+  const [fontSize, setFontSize] = useState(18);
+
+  if (!chapter) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Chapter not found</h1>
+          <Link href="/">
+            <Button>Go Home</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const nextChapter = bhagavadGitaData.find((c) => c.id === chapterId + 1);
+  const prevChapter = bhagavadGitaData.find((c) => c.id === chapterId - 1);
+
+  return (
+    <div className="min-h-screen bg-background pb-20">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-5xl mx-auto flex h-14 items-center px-4">
+          <Link 
+            href="/" 
+            className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "mr-2 hover:bg-primary/10 hover:text-primary")}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <div className="flex-1 overflow-hidden">
+            <h1 className="text-lg font-bold truncate">
+              <span className="text-primary mr-2">{chapter.id}.</span>
+              {chapter.kannadaTitle}
+            </h1>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="hover:bg-primary/10 hover:text-primary">
+                  <Type className="h-5 w-5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-4 mr-4">
+                <div className="space-y-4">
+                  <h4 className="font-medium leading-none">Text Size</h4>
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm">A</span>
+                    <Slider 
+                      value={[fontSize]} 
+                      min={14} 
+                      max={28} 
+                      step={1} 
+                      onValueChange={(vals) => setFontSize(vals[0])}
+                      className="flex-1"
+                    />
+                    <span className="text-xl">A</span>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+      </header>
+
+      {/* Chapter Intro */}
+      <div className="bg-muted/30 border-b border-border/50">
+        <div className="max-w-4xl mx-auto py-12 px-4 text-center">
+          <span className="inline-block mb-4 text-sm font-sans font-bold uppercase tracking-wider text-primary bg-primary/10 px-3 py-1 rounded-full">
+            Chapter {chapter.id}
+          </span>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4 text-foreground">
+            {chapter.kannadaTitle}
+          </h2>
+          <h3 className="text-xl md:text-2xl text-muted-foreground font-serif mb-6">
+            {chapter.title}
+          </h3>
+          <p className="text-lg text-foreground/80 max-w-2xl mx-auto font-sans leading-relaxed">
+            {chapter.description}
+          </p>
+        </div>
+      </div>
+
+      {/* Verses List */}
+      <main className="max-w-4xl mx-auto py-8 px-4 space-y-8">
+        {chapter.verses.map((verse) => (
+          <div 
+            key={verse.id} 
+            id={`verse-${verse.verse}`}
+            className="group relative bg-card rounded-xl border border-border/50 p-6 md:p-8 hover:shadow-md transition-shadow scroll-mt-20"
+          >
+            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">
+                {chapter.id}.{verse.verse}
+              </span>
+            </div>
+
+            {/* Sanskrit/Kannada Verse */}
+            <div className="mb-6 text-center">
+              <p 
+                className="font-bold text-foreground leading-relaxed mb-4"
+                style={{ fontSize: `${fontSize}px` }}
+              >
+                {verse.kannada}
+              </p>
+            </div>
+
+            {/* Transliteration */}
+            <div className="mb-6 p-4 bg-muted/30 rounded-lg border border-border/30">
+              <p 
+                className="text-muted-foreground font-serif italic text-center"
+                style={{ fontSize: `${fontSize * 0.9}px` }}
+              >
+                {verse.transliteration}
+              </p>
+            </div>
+
+            {/* Meaning */}
+            <div className="relative">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/30 rounded-full"></div>
+              <div className="pl-6">
+                <h4 className="text-sm font-sans font-bold text-primary uppercase tracking-wider mb-2">Meaning</h4>
+                <p 
+                  className="text-foreground/90 font-sans leading-relaxed"
+                  style={{ fontSize: `${fontSize * 0.9}px` }}
+                >
+                  {verse.meaning}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </main>
+
+      {/* Navigation Footer */}
+      <div className="max-w-5xl mx-auto px-4 py-8 flex justify-between items-center border-t border-border/50">
+        {prevChapter ? (
+          <Link 
+            href={`/chapter/${prevChapter.id}`}
+            className={cn(buttonVariants({ variant: "outline" }), "gap-2")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <div className="text-left hidden sm:block">
+              <div className="text-xs text-muted-foreground">Previous</div>
+              <div className="font-bold">{prevChapter.title}</div>
+            </div>
+          </Link>
+        ) : (
+          <div></div>
+        )}
+
+        {nextChapter ? (
+          <Link 
+            href={`/chapter/${nextChapter.id}`}
+            className={cn(buttonVariants({ variant: "outline" }), "gap-2")}
+          >
+            <div className="text-right hidden sm:block">
+              <div className="text-xs text-muted-foreground">Next</div>
+              <div className="font-bold">{nextChapter.title}</div>
+            </div>
+            <ArrowLeft className="h-4 w-4 rotate-180" />
+          </Link>
+        ) : (
+          <div></div>
+        )}
+      </div>
+    </div>
+  );
+}

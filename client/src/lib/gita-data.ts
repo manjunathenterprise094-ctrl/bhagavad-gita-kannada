@@ -2308,6 +2308,16 @@ id: "6-6",
 "transliteration": "yoginām api sarveṣhāṁ mad-gatena antar-ātmanā śhraddhāvān bhajate yo māṁ sa me yukta-tamo mataḥ",
 "meaning": "ಎಲ್ಲ ಯೋಗಿಗಳಲ್ಲಿ, ಯಾರು ಅಂತರಾತ್ಮನಿಂದ ನನ್ನಲ್ಲಿಯೇ ನೆಲೆಗೊಂಡು, ಶ್ರದ್ಧೆಯಿಂದ ನನ್ನನ್ನು ಭಜಿಸುತ್ತಾರೋ, ಅವರೇ ನನ್ನ ಮತದಲ್ಲಿ ಅತ್ಯುತ್ತಮ ಯೋಗಿಯಾಗಿದ್ದಾರೆ."
 },
+
+    ]
+  },
+  {
+    id: 7,
+    title: "Jnana Vijnana Yoga",
+    kannadaTitle: "ಜ್ಞಾನ ವಿಜ್ಞಾನ ಯೋಗ",
+    description: "ಜ್ಞಾನ ಮತ್ತು ವಿಜ್ಞಾನ - Knowledge and wisdom",
+    totalVerses: 30,
+    verses: [
 {
 "id": "7-1",
 "chapter": 7,
@@ -2548,6 +2558,16 @@ id: "6-6",
 "transliteration": "sādhibhūtādhidaivaṁ cha mamaitān eti viditvā mad-bhāvāyopapadyante mamaivānuśhayena te",
 "meaning": "ಅಧಿಭೂತ, ಅಧಿದೈವ ಮತ್ತು ಅಧಿಯಜ್ಞಗಳೆಲ್ಲವೂ ನನ್ನಿಂದಲೇ ಎಂದು ತಿಳಿದು, ಮರಣಕಾಲದಲ್ಲಿಯೂ ನನ್ನ ಭಾವನೆಯನ್ನು ಪಡೆದು, ನನ್ನಲ್ಲಿಯೇ ಪ್ರವೇಶಿಸುತ್ತಾರೆ."
 },
+
+    ]
+  },
+  {
+    id: 8,
+    title: "Aksara Brahma Yoga",
+    kannadaTitle: "ಅಕ್ಷರ ಬ್ರಹ್ಮ ಯೋಗ",
+    description: "ಅಕ್ಷರ ಬ್ರಹ್ಮ - The imperishable absolute",
+    totalVerses: 28,
+    verses: [
 {
 "id": "8-1",
 "chapter": 8,
@@ -2772,6 +2792,16 @@ id: "6-6",
 "transliteration": "vedeṣhu yajñeṣhu tapaḥsu chaiva dāneṣhu yat puṇya-phalaṁ pradiṣhṭam atyeti tat sarvam idaṁ viditvā yogī paraṁ sthānam upaiti chādyam",
 "meaning": "ವೇದ, ಯಜ್ಞ, ತಪಸ್ಸು, ದಾನಗಳಲ್ಲಿ ಪ್ರದಿಷ್ಟವಾದ ಪುಣ್ಯಫಲವನ್ನು ಎಲ್ಲವನ್ನೂ ತಿಳಿದು ಅತಿಕ್ರಮಿಸಿದ ಯೋಗಿ ಆದಿಪರಮಸ್ಥಾನವನ್ನು ಪಡೆಯುತ್ತಾನೆ."
 },
+
+    ]
+  },
+  {
+    id: 9,
+    title: "Raja Vidya Raja Guhya Yoga",
+    kannadaTitle: "ರಾಜ ವಿದ್ಯಾ ರಾಜ ಗುಹ್ಯ ಯೋಗ",
+    description: "ರಾಜವಿದ್ಯೆ ಮತ್ತು ರಾಜಗುಹ್ಯ - The king of knowledge and the king of secrets",
+    totalVerses: 34,
+    verses: [
 {
 "id": "9-1",
 "chapter": 9,
@@ -3044,6 +3074,16 @@ id: "6-6",
 "transliteration": "man-manā bhava mad-bhakto mad-yājī māṁ namaskuru mām evaiṣhyasi yuktvaivam ātmānaṁ mat-parāyaṇaḥ",
 "meaning": "ನನ್ನಲ್ಲಿ ಮನಸ್ಸನ್ನು ಇಟ್ಟುಕೋ, ನನ್ನ ಭಕ್ತನಾಗು, ನನ್ನ ಯಜನೆ ಮಾಡು, ನನಗೆ ನಮಸ್ಕರಿಸು. ಈ ರೀತಿ ನನ್ನಲ್ಲಿ ಆತ್ಮವನ್ನು ಏಕಾಗ್ರಗೊಳಿಸಿದವನು ನನ್ನನ್ನೇ ಪಡೆಯುವೆ."
 },
+
+    ]
+  },
+  {
+    id: 10,
+    title: "Vibhuti Yoga",
+    kannadaTitle: "ವಿಭೂತಿ ಯೋಗ",
+    description: "ದೈವಿಕ ವೈಭವಗಳು - Divine manifestations",
+    totalVerses: 42,
+    verses: [
 {
 "id": "10-1",
 "chapter": 10,
@@ -3380,6 +3420,16 @@ id: "6-6",
 "transliteration": "athavā bahunaitena kiṁ jñātena tavārjuna viṣhṭabhyāham idaṁ kṛitsnam ekāṁśhena sthito jagat",
 "meaning": "ಹೇ ಅರ್ಜುನ, ಇದರಿಂದ ಬಹಳ ಏನು ತಿಳಿಯಬೇಕು? ಈ ಸಮಸ್ತ ಜಗತ್ತನ್ನು ನನ್ನ ಒಂದು ಅಂಶದಿಂದ ವ್ಯಾಪಿಸಿ ನಿಂತಿದ್ದೇನೆ."
 },
+
+    ]
+  },
+  {
+    id: 11,
+    title: "Visvarupa Darsana Yoga",
+    kannadaTitle: "ವಿಶ್ವರೂಪ ದರ್ಶನ ಯೋಗ",
+    description: "ವಿಶ್ವರೂಪ ದರ್ಶನ - Vision of the universal form",
+    totalVerses: 55,
+    verses: [
 {
 "id": "11-1",
 "chapter": 11,
@@ -3820,6 +3870,16 @@ id: "6-6",
 "transliteration": "mat-karma-kṛin mat-paramo mad-bhaktaḥ saṅga-varjitaḥ nirvairaḥ sarva-bhūteṣhu yaḥ sa mām eti pāṇḍava",
 "meaning": "ಹೇ ಪಾಂಡವ, ಯಾರು ನನ್ನ ಕರ್ಮವನ್ನು ಮಾಡುವವರೂ, ನನ್ನ ಪರಮರೂ, ನನ್ನ ಭಕ್ತರೂ, ಸಂಗವರ್ಜಿತರೂ, ಸರ್ವಭೂತಗಳಲ್ಲಿ ನಿರ್ವೈರರೂ ಆಗಿರುತ್ತಾರೋ, ಅವರು ನನ್ನನ್ನು ಪಡೆಯುತ್ತಾರೆ."
 },
+
+    ]
+  },
+  {
+    id: 12,
+    title: "Bhakti Yoga",
+    kannadaTitle: "ಭಕ್ತಿ ಯೋಗ",
+    description: "ಭಕ್ತಿಯ ಮಾರ್ಗ - The path of devotion",
+    totalVerses: 20,
+    verses: [
 {
 "id": "12-1",
 "chapter": 12,
@@ -3980,6 +4040,16 @@ id: "6-6",
 "transliteration": "ye tu dharmyāmṛitam idaṁ yathoktaṁ paryupāsate śhraddadhānā mat-paramā bhaktās te 'tīva me priyāḥ",
 "meaning": "ಯಾರು ಧರ್ಮ್ಯಾಮೃತವಾದ ಈ ಉಪದೇಶವನ್ನು ಹೇಳಿದಂತೆ ಶ್ರದ್ಧೆಯಿಂದ, ಮತ್ಪರರಾಗಿ ಉಪಾಸಿಸುತ್ತಾರೋ, ಅಂತಹ ಭಕ್ತರು ನನಗೆ ಅತೀವ ಪ್ರಿಯರು."
 },
+
+    ]
+  },
+  {
+    id: 13,
+    title: "Kshetra Kshetrajna Vibhaga Yoga",
+    kannadaTitle: "ಕ್ಷೇತ್ರ ಕ್ಷೇತ್ರಜ್ಞ ವಿಭಾಗ ಯೋಗ",
+    description: "ಕ್ಷೇತ್ರ ಮತ್ತು ಕ್ಷೇತ್ರಜ್ಞ - Field and the knower of the field",
+    totalVerses: 35,
+    verses: [
 {
 "id": "13-1",
 "chapter": 13,
@@ -4260,6 +4330,16 @@ id: "6-6",
 "transliteration": "kṣhetra-kṣhetra-jñayor evam antaraṁ jñāna-chakṣhuṣhā bhūta-prakṛiti-mokṣhaṁ cha ye vidur yānti te param",
 "meaning": "ಕ್ಷೇತ್ರ ಮತ್ತು ಕ್ಷೇತ್ರಜ್ಞರ ಅಂತರವನ್ನು ಜ್ಞಾನಚಕ್ಷುಗಳಿಂದ ತಿಳಿದು, ಭೂತಪ್ರಕೃತಿಮೋಕ್ಷವನ್ನು ತಿಳಿದವರು ಪರವನ್ನು ಪಡೆಯುತ್ತಾರೆ."
 },
+
+    ]
+  },
+  {
+    id: 14,
+    title: "Gunatraya Vibhaga Yoga",
+    kannadaTitle: "ಗುಣತ್ರಯ ವಿಭಾಗ ಯೋಗ",
+    description: "ಮೂರು ಗುಣಗಳ ವಿಭಾಗ - The three qualities of nature",
+    totalVerses: 27,
+    verses: [
 {
 "id": "14-1",
 "chapter": 14,
@@ -4476,6 +4556,16 @@ id: "6-6",
 "transliteration": "brahmaṇo hi pratiṣhṭhāham amṛitasyāvyayasya cha śhāśhvatasya cha dharmasya sukhasyaikāntikasya cha",
 "meaning": "ಯಾಕೆಂದರೆ ನಾನೇ ಬ್ರಹ್ಮನ ಪ್ರತಿಷ್ಠಾ, ಅಮೃತದ ಪ್ರತಿಷ್ಠಾ, ಅವ್ಯಯದ ಪ್ರತಿಷ್ಠಾ, ಶಾಶ್ವತ ಧರ್ಮದ ಪ್ರತಿಷ್ಠಾ, ಏಕಾಂತಿಕ ಸುಖದ ಪ್ರತಿಷ್ಠಾ."
 },
+
+    ]
+  },
+  {
+    id: 15,
+    title: "Purushottama Yoga",
+    kannadaTitle: "ಪುರುಷೋತ್ತಮ ಯೋಗ",
+    description: "ಪರಮಾತ್ಮ - The supreme self",
+    totalVerses: 20,
+    verses: [
 {
 "id": "15-1",
 "chapter": 15,
@@ -4636,6 +4726,16 @@ id: "6-6",
 "transliteration": "iti guhyatamaṁ śhāstram idam uktaṁ mayānagha etad buddhvā buddhimān syāt kṛita-kṛityaśh cha bhārata",
 "meaning": "ಹೇ ಅನಘ, ಹೇ ಭಾರತ, ಈ ರೀತಿ ಗುಹ್ಯತಮವಾದ ಈ ಶಾಸ್ತ್ರವನ್ನು ನಾನು ಹೇಳಿದ್ದೇನೆ. ಇದನ್ನು ತಿಳಿದು ಬುದ್ಧಿಮಾನ್ ಆಗು, ಕೃತಕೃತ್ಯನಾಗು."
 },
+
+    ]
+  },
+  {
+    id: 16,
+    title: "Daivasura Sampad Vibhaga Yoga",
+    kannadaTitle: "ದೈವಾಸುರ ಸಂಪದ್ ವಿಭಾಗ ಯೋಗ",
+    description: "ದೈವಿಕ ಮತ್ತು ಆಸುರ ಸ್ವಭಾವ - Divine and demoniac natures",
+    totalVerses: 24,
+    verses: [
 {
 "id": "16-1",
 "chapter": 16,
@@ -4828,6 +4928,16 @@ id: "6-6",
 "transliteration": "tasmāch chhāstraṁ pramāṇaṁ te kāryākārya-vyavasthitau jñātvā śhāstra-vidhānoktaṁ karma kartum ihārhasi",
 "meaning": "ಆದ್ದರಿಂದ ಕಾರ್ಯ-ಅಕಾರ್ಯಗಳ ವ್ಯವಸ್ಥೆಯಲ್ಲಿ ಶಾಸ್ತ್ರವೇ ನಿನಗೆ ಪ್ರಮಾಣ. ಶಾಸ್ತ್ರವಿಧಿಯಲ್ಲಿ ಹೇಳಿದ ಕರ್ಮವನ್ನು ಇಲ್ಲಿ ಮಾಡಲು ನೀನು ಅರ್ಹನಾಗಿದ್ದೀ."
 },
+
+    ]
+  },
+  {
+    id: 17,
+    title: "Shraddhatraya Vibhaga Yoga",
+    kannadaTitle: "ಶ್ರದ್ಧಾತ್ರಯ ವಿಭಾಗ ಯೋಗ",
+    description: "ಮೂರು ವಿಧ ಶ್ರದ್ಧೆ - The three types of faith",
+    totalVerses: 28,
+    verses: [
 {
 "id": "17-1",
 "chapter": 17,
@@ -5052,6 +5162,16 @@ id: "6-6",
 "transliteration": "aśhraddhayā hutaṁ dattaṁ tapas taptaṁ kṛitaṁ cha yat asad ity uchyate pārtha na cha tat pretya no iha",
 "meaning": "ಹೇ ಪಾರ್ಥ, ಶ್ರದ್ಧೆಯಿಲ್ಲದೆ ಹೋಮ ಮಾಡಿದ್ದು, ದತ್ತವಾದ್ದು, ತಪ್ತ ತಪಸ್ಸು, ಮಾಡಿದ ಕರ್ಮವು 'ಅಸತ್' ಎಂದು ಹೇಳಲ್ಪಡುತ್ತದೆ. ಅದು ಇಹ-ಪರಗಳಲ್ಲಿ ಫಲಿಸುವುದಿಲ್ಲ."
 },
+
+    ]
+  },
+  {
+    id: 18,
+    title: "Moksha Sanyasa Yoga",
+    kannadaTitle: "ಮೋಕ್ಷ ಸಂನ್ಯಾಸ ಯೋಗ",
+    description: "ಮೋಕ್ಷ ಮತ್ತು ಸಂನ್ಯಾಸ - Liberation through renunciation",
+    totalVerses: 78,
+    verses: [
 {
 "id": "18-1",
 "chapter": 18,

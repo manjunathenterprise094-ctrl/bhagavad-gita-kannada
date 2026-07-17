@@ -9,3 +9,4 @@ subscribers.json
 .env
 hostinger-upload
 hostinger-nodejs-upload
+index.cjs

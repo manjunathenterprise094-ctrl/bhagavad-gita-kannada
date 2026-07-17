@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { 
   BookOpen, Search, X, Volume2, VolumeX, Menu, Compass, BookOpenCheck, 
   Info, Bookmark, ArrowRight, Sparkles, GraduationCap, Heart, Flame, Crown, Globe,
-  MessageSquareMore, Music
+  MessageSquareMore, Music, Play
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { updateMetaTags } from "@/lib/seo";
@@ -845,6 +845,9 @@ export default function Home() {
             <a href="/chat" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm shadow-lg btn-shimmer btn-glow divine-ripple cursor-pointer">
               <span>🙏</span> Ask Krishna
             </a>
+            <a href="/pravachana" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-primary/40 text-primary font-bold text-sm shadow-md hover:bg-primary/20 transition-all divine-ripple cursor-pointer">
+              <Music className="h-4 w-4 animate-pulse text-amber-500" /> Listen Gita (Audio)
+            </a>
             <a href="/chapters" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-primary/30 bg-card/70 text-primary font-bold text-sm shadow-sm hover:bg-primary/10 transition-all divine-ripple cursor-pointer">
               <BookOpen className="h-4 w-4" /> Read Chapters
             </a>
@@ -879,6 +882,69 @@ export default function Home() {
             <div className="text-2xl md:text-3xl font-bold text-gradient-gold">∞</div>
             <div className="text-[10px] md:text-xs text-muted-foreground mt-0.5 font-sans uppercase tracking-wide">Wisdom</div>
           </div>
+        </motion.div>
+
+        {/* Listen Gita Spotlight Banner */}
+        <motion.div
+          className="max-w-2xl mx-auto px-4 mt-8 mb-4"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
+        >
+          <Link href="/pravachana" className="block group">
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-purple-500/5 border border-primary/30 p-5 sm:p-6 shadow-xl backdrop-blur-md transition-all duration-300 hover:border-primary/50 hover:shadow-primary/5 hover:-translate-y-1 text-left">
+              {/* Decorative elements */}
+              <div className="absolute -right-12 -top-12 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500" />
+              <div className="absolute -left-12 -bottom-12 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl" />
+
+              <div className="flex flex-col sm:flex-row items-center gap-5 relative z-10">
+                {/* Left: Interactive Playing Disc Graphic */}
+                <div className="relative shrink-0 flex items-center justify-center select-none">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-amber-500/30 p-1 flex items-center justify-center bg-card shadow-md">
+                    <motion.div 
+                      className="w-full h-full rounded-full bg-gradient-to-tr from-amber-950 to-amber-900 flex items-center justify-center"
+                      animate={{ rotate: 360 }}
+                      transition={{ ease: "linear", duration: 12, repeat: Infinity }}
+                    >
+                      <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
+                        <span className="text-[9px] text-white font-serif font-bold">ॐ</span>
+                      </div>
+                    </motion.div>
+                  </div>
+                  {/* Play Circle Overlay */}
+                  <div className="absolute inset-0 bg-black/10 rounded-full flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-md transition-transform duration-300 group-hover:scale-110">
+                      <Play className="h-4.5 w-4.5 fill-white text-white translate-x-0.5" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right: Content details */}
+                <div className="flex-1 text-center sm:text-left">
+                  <div className="divine-badge inline-flex items-center gap-1 mb-1.5">
+                    <Sparkles className="h-2.5 w-2.5" /> Devotional Feature
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold text-gradient-gold mb-0.5 leading-tight">
+                    Listen to Bhagavad Gita Kannada Pravachana
+                  </h3>
+                  <h4 className="text-[11px] font-serif font-bold text-foreground/80 mb-2">
+                    ಶ್ರೀಮದ್ ಭಗವದ್ಗೀತೆ ಪೂರ್ಣ ಆಡಿಯೋ ಶ್ರವಣ
+                  </h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed font-sans">
+                    Listen to the complete 18 chapters and 700 verses of the Bhagavad Gita in pure Kannada recitation. Experience the divine vibration of Yatharth Geeta.
+                  </p>
+                </div>
+              </div>
+
+              {/* Soundwave Animation */}
+              <div className="absolute bottom-3 right-5 flex gap-0.5 h-5 items-end pointer-events-none opacity-30 group-hover:opacity-80 transition-opacity">
+                <span className="w-0.5 bg-primary rounded-full transition-all duration-300 h-2 group-hover:h-3 group-hover:animate-pulse" style={{ animationDelay: "0s" }} />
+                <span className="w-0.5 bg-primary rounded-full transition-all duration-300 h-4 group-hover:h-5 group-hover:animate-pulse" style={{ animationDelay: "0.2s" }} />
+                <span className="w-0.5 bg-primary rounded-full transition-all duration-300 h-1.5 group-hover:h-3 group-hover:animate-pulse" style={{ animationDelay: "0.4s" }} />
+                <span className="w-0.5 bg-primary rounded-full transition-all duration-300 h-3 group-hover:h-4 group-hover:animate-pulse" style={{ animationDelay: "0.1s" }} />
+              </div>
+            </div>
+          </Link>
         </motion.div>
       </section>
 

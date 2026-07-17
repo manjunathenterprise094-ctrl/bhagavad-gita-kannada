@@ -372,7 +372,23 @@ export function MobileNavDrawer({ isOpen, onClose }: MobileNavProps) {
               })}
             </div>
 
-            <div className="pt-6 border-t border-border/50 text-center">
+            <div className="pt-6 border-t border-border/50 text-center space-y-4">
+              <a 
+                href="https://play.google.com/store/apps/details?id=co.median.android.mbbopqr&pcampaignid=web_share"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2.5 px-4.5 py-2.5 rounded-xl bg-black border border-border/40 hover:bg-zinc-900 text-white font-sans transition-all w-full justify-center shadow-lg btn-glow"
+                aria-label="Install Bhagavad Gita app from Google Play Store"
+              >
+                <svg viewBox="0 0 512 512" className="h-4 w-4 fill-white shrink-0">
+                  <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58 33.3-60.7-60.7 60.7-60.7 58 33.3c15.1 8.7 25.3 24.3 25.3 42.1s-10.2 33.4-25.3 42.1zM385.4 337.8L104.6 499l220.7-220.7 60.1 59.5z"/>
+                </svg>
+                <div className="text-left leading-none">
+                  <div className="text-[7px] uppercase tracking-wider text-zinc-400 font-medium font-sans">GET IT ON</div>
+                  <div className="text-xs font-bold font-sans mt-0.5">Google Play</div>
+                </div>
+              </a>
+
               <p className="text-[11px] text-muted-foreground font-sans">
                 Timeless Wisdom for Modern Living
               </p>

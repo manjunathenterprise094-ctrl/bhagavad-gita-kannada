@@ -29,16 +29,36 @@ export default function Footer() {
             <Link href="/about" className="nav-link hover:text-primary transition-colors">About</Link>
           </nav>
 
-          {/* Contact Developer */}
-          <a
-            href="mailto:service.weforyou@gmail.com"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-primary/25 bg-primary/5 hover:bg-primary/12 text-primary font-sans font-semibold text-xs transition-all btn-glow group"
-            aria-label="Contact the developer via email"
-          >
-            <Mail className="h-3.5 w-3.5 group-hover:animate-bounce" />
-            Contact Developer
-            <ExternalLink className="h-3 w-3 opacity-50" />
-          </a>
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            {/* Google Play App Link */}
+            <a 
+              href="https://play.google.com/store/apps/details?id=co.median.android.mbbopqr&pcampaignid=web_share"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-black border border-border/40 hover:bg-zinc-900 text-white font-sans transition-all btn-glow shadow-md"
+              aria-label="Install Bhagavad Gita app from Google Play Store"
+            >
+              <svg viewBox="0 0 512 512" className="h-4 w-4 fill-white shrink-0">
+                <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58 33.3-60.7-60.7 60.7-60.7 58 33.3c15.1 8.7 25.3 24.3 25.3 42.1s-10.2 33.4-25.3 42.1zM385.4 337.8L104.6 499l220.7-220.7 60.1 59.5z"/>
+              </svg>
+              <div className="text-left leading-none">
+                <div className="text-[7px] uppercase tracking-wider text-zinc-400 font-medium font-sans">GET IT ON</div>
+                <div className="text-xs font-bold font-sans mt-0.5">Google Play</div>
+              </div>
+            </a>
+
+            {/* Contact Developer */}
+            <a
+              href="mailto:service.weforyou@gmail.com"
+              className="inline-flex items-center gap-2 px-4 py-3 sm:py-2.5 rounded-xl border border-primary/25 bg-primary/5 hover:bg-primary/12 text-primary font-sans font-semibold text-xs transition-all btn-glow group h-9"
+              aria-label="Contact the developer via email"
+            >
+              <Mail className="h-3.5 w-3.5 group-hover:animate-bounce" />
+              Contact Developer
+              <ExternalLink className="h-3 w-3 opacity-50" />
+            </a>
+          </div>
         </div>
 
         {/* Divider */}

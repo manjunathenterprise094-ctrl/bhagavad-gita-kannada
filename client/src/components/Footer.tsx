@@ -1,4 +1,4 @@
-﻿import { Heart, Mail, ExternalLink } from "lucide-react";
+import { Heart, Mail, ExternalLink } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Footer() {
@@ -25,6 +25,7 @@ export default function Footer() {
             <Link href="/verses" className="nav-link hover:text-primary transition-colors">Verses</Link>
             <Link href="/bookmarks" className="nav-link hover:text-primary transition-colors">Bookmarks</Link>
             <Link href="/chat" className="nav-link hover:text-primary transition-colors">Ask Krishna</Link>
+            <Link href="/pravachana" className="nav-link hover:text-primary transition-colors">Listen Gita (Audio)</Link>
             <Link href="/about" className="nav-link hover:text-primary transition-colors">About</Link>
           </nav>
 

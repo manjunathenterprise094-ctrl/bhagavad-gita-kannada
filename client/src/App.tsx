@@ -12,6 +12,7 @@ import Chapters from "@/pages/chapters";
 import Verses from "@/pages/verses";
 import Bookmarks from "@/pages/bookmarks";
 import About from "@/pages/about";
+import Pravachana from "@/pages/pravachana";
 import Footer from "@/components/Footer";
 import SubscribeModal from "@/components/SubscribeModal";
 
@@ -41,6 +42,7 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/bookmarks" component={Bookmarks} />
       <Route path="/chat" component={Chat} />
+      <Route path="/pravachana" component={Pravachana} />
       <Route path="/chapter/:id" component={Chapter} />
       <Route path="/chapter/:id/verse/:verseId" component={Chapter} />
       <Route component={NotFound} />

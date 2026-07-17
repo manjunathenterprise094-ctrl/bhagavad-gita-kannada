@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { 
   BookOpen, Search, X, Volume2, VolumeX, Menu, Compass, BookOpenCheck, 
   Info, Bookmark, ArrowRight, Sparkles, GraduationCap, Heart, Flame, Crown, Globe,
-  MessageSquareMore
+  MessageSquareMore, Music
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { updateMetaTags } from "@/lib/seo";
@@ -324,6 +324,7 @@ export function MobileNavDrawer({ isOpen, onClose }: MobileNavProps) {
     { href: "/verses", label: "All Verses", icon: BookOpenCheck },
     { href: "/bookmarks", label: "My Bookmarks", icon: Bookmark },
     { href: "/chat", label: "Ask Krishna", icon: Sparkles },
+    { href: "/pravachana", label: "Listen Gita (Audio)", icon: Music },
     { href: "/about", label: "About Gita", icon: Info },
   ];
 
@@ -776,6 +777,7 @@ export default function Home() {
             <Link href="/verses" className="nav-link text-muted-foreground hover:text-primary">Verses</Link>
             <Link href="/bookmarks" className="nav-link text-muted-foreground hover:text-primary">Bookmarks</Link>
             <Link href="/chat" className="nav-link text-muted-foreground hover:text-primary">Ask Krishna</Link>
+            <Link href="/pravachana" className="nav-link text-muted-foreground hover:text-primary">Listen Gita</Link>
             <Link href="/about" className="nav-link text-muted-foreground hover:text-primary">About</Link>
           </nav>
 

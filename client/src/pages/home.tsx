@@ -858,15 +858,15 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <a href="/chat" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm shadow-lg btn-shimmer btn-glow divine-ripple cursor-pointer">
+            <Link href="/chat" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm shadow-lg btn-shimmer btn-glow divine-ripple cursor-pointer">
               <span>🙏</span> Ask Krishna
-            </a>
-            <a href="/pravachana" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-primary/40 text-primary font-bold text-sm shadow-md hover:bg-primary/20 transition-all divine-ripple cursor-pointer">
+            </Link>
+            <Link href="/pravachana" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-primary/40 text-primary font-bold text-sm shadow-md hover:bg-primary/20 transition-all divine-ripple cursor-pointer">
               <Music className="h-4 w-4 animate-pulse text-amber-500" /> Listen Gita (Audio)
-            </a>
-            <a href="/chapters" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-primary/30 bg-card/70 text-primary font-bold text-sm shadow-sm hover:bg-primary/10 transition-all divine-ripple cursor-pointer">
+            </Link>
+            <Link href="/chapters" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-primary/30 bg-card/70 text-primary font-bold text-sm shadow-sm hover:bg-primary/10 transition-all divine-ripple cursor-pointer">
               <BookOpen className="h-4 w-4" /> Read Chapters
-            </a>
+            </Link>
           </motion.div>
         </div>
 

@@ -1424,7 +1424,7 @@ export default function Home() {
               This platform is created with deep devotion to keep the eternal message of Lord Krishna accessible to everyone, completely free from ads and subscriptions. However, maintaining the domain name, hosting servers, advanced Gemini AI API queries, and continuous software development requires ongoing resources.
             </p>
             <p className="font-bold">
-              Do not pass this opportunity to support this noble task of Jnana Yajna. Even a tiny contribution of ₹10, ₹50, or ₹100 helps keep this sacred platform online for seekers worldwide.
+              Do not pass this opportunity to support this noble task of Jnana Yajna. Any amount you contribute is highly valuable and helps keep this sacred platform online for seekers worldwide.
             </p>
           </div>
 

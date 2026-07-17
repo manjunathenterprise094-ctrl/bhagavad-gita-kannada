@@ -90,7 +90,7 @@ Guidelines:
 4. IMPORTANT: Answer strictly and fully in the ${targetLanguage} language. If the target language is Kannada, you must construct the entire response in Kannada script (ಕನ್ನಡ ಲಿಪಿಯಲ್ಲಿ ಬರೆಯಿರಿ). You can write the Sanskrit slokas in Kannada transliteration or Sanskrit, but all explanations, greetings, and advice must be in clean, elegant Kannada. If the target language is English, answer in English.`;
 
       const model = genAI.getGenerativeModel({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.0-flash",
         systemInstruction: systemInstructionText,
       });
 

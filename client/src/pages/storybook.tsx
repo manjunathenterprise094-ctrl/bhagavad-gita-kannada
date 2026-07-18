@@ -165,16 +165,29 @@ export default function Storybook() {
     utterance.lang = lang === "kn" ? "kn-IN" : "en-US";
 
     const voices = window.speechSynthesis.getVoices();
-    const matchedVoice = voices.find(v => 
-      lang === "kn" 
-        ? v.lang.toLowerCase().includes("kn") || v.lang.toLowerCase().includes("kannada")
-        : v.lang.toLowerCase().startsWith("en")
-    );
+    let matchedVoice = null;
+    if (lang === "kn") {
+      matchedVoice = voices.find(v => 
+        v.lang.toLowerCase().includes("kn") || v.lang.toLowerCase().includes("kannada")
+      );
+    } else {
+      const voicePreferences = ["male", "david", "ravi", "google us male", "natural", "en-in", "en-us"];
+      for (const pref of voicePreferences) {
+        matchedVoice = voices.find(v => 
+          v.lang.toLowerCase().startsWith("en") && 
+          v.name.toLowerCase().includes(pref)
+        );
+        if (matchedVoice) break;
+      }
+      if (!matchedVoice) {
+        matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith("en"));
+      }
+    }
     if (matchedVoice) utterance.voice = matchedVoice;
 
-    utterance.pitch = 0.95;
-    utterance.rate = 0.9;
-    
+    utterance.pitch = 0.88; // Deep, resonant, warm tone
+    utterance.rate = 0.82;  // Slow, comforting pace
+
     // Pause global flute audio to prevent clashing
     if (globalAudio) globalAudio.pause();
 

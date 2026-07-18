@@ -26,20 +26,35 @@ export function useSpeech() {
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = lang === "kn" ? "kn-IN" : "en-US";
 
-    // Select suitable voice
+    // Select a premium, deep, and warm male voice suitable for Lord Krishna
     const voices = window.speechSynthesis.getVoices();
-    const matchedVoice = voices.find(v => 
-      lang === "kn" 
-        ? v.lang.toLowerCase().includes("kn") || v.lang.toLowerCase().includes("kannada")
-        : v.lang.toLowerCase().startsWith("en")
-    );
+    let matchedVoice = null;
+    
+    if (lang === "kn") {
+      matchedVoice = voices.find(v => 
+        v.lang.toLowerCase().includes("kn") || v.lang.toLowerCase().includes("kannada")
+      );
+    } else {
+      // Prioritize deep/warm male voices and Indian English (for authentic Sanskrit pronunciations)
+      const voicePreferences = ["male", "david", "ravi", "google us male", "natural", "en-in", "en-us"];
+      for (const pref of voicePreferences) {
+        matchedVoice = voices.find(v => 
+          v.lang.toLowerCase().startsWith("en") && 
+          v.name.toLowerCase().includes(pref)
+        );
+        if (matchedVoice) break;
+      }
+      if (!matchedVoice) {
+        matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith("en"));
+      }
+    }
     
     if (matchedVoice) {
       utterance.voice = matchedVoice;
     }
     
-    utterance.pitch = 0.95; // Slightly deeper, warm pitch
-    utterance.rate = 0.92;  // Poised and calm speed
+    utterance.pitch = 0.88; // Lower pitch to sound deep, resonant, and divine
+    utterance.rate = 0.85;  // Slower, poised speed for a calm and comforting celestial tone
 
     utterance.onend = () => {
       setActiveTextId(null);

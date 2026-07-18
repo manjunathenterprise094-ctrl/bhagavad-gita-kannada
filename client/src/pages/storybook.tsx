@@ -93,7 +93,6 @@ export default function Storybook() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showVideoMode, setShowVideoMode] = useState(true);
   
   const [activeSpeech, setActiveSpeech] = useState(false);
   const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -101,7 +100,7 @@ export default function Storybook() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const activeScene = GITA_SCENES[activeSceneIndex];
 
-  const stopAllNarration = () => {
+  const stopVoiceNarrationOnly = () => {
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
@@ -115,42 +114,46 @@ export default function Storybook() {
     }
   };
 
-  const handleVoiceNarration = (text: string, lang: "kn" | "en") => {
-    if (activeSpeech) {
-      stopAllNarration();
-      return;
-    }
+  const playActiveSceneNarration = (index: number) => {
+    stopVoiceNarrationOnly();
 
-    const audioUrl = `/audio/storybook/scene_${activeScene.id + 1}.mp3`;
+    const scene = GITA_SCENES[index];
+    const audioUrl = `/audio/storybook/scene_${scene.id + 1}.mp3`;
     const audio = new Audio(audioUrl);
     voiceAudioRef.current = audio;
 
     audio.onerror = () => {
-      console.log("Pre-recorded voiceover not found, playing TTS...");
+      console.log(`Voiceover MP3 for scene ${scene.id + 1} not found, playing TTS...`);
       voiceAudioRef.current = null;
-      triggerSpeechSynthesis(text, lang);
+      triggerSpeechSynthesis(scene.kannadaText, "kn");
     };
 
     audio.onended = () => {
-      setActiveSpeech(false);
       voiceAudioRef.current = null;
-      if (audioRef.current) audioRef.current.volume = 0.25;
+      handleNarrationEnded();
     };
 
     audio.onplay = () => {
       setActiveSpeech(true);
-      if (audioRef.current) audioRef.current.volume = 0.05;
+      if (audioRef.current) audioRef.current.volume = 0.05; // Duck background music
     };
 
     audio.play().catch((err) => {
-      console.warn("Direct audio play failed, using TTS:", err);
+      console.warn("Audio play blocked, using TTS fallback:", err);
       voiceAudioRef.current = null;
-      triggerSpeechSynthesis(text, lang);
+      triggerSpeechSynthesis(scene.kannadaText, "kn");
     });
   };
 
   const triggerSpeechSynthesis = (text: string, lang: "kn" | "en") => {
-    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    if (typeof window === "undefined" || !window.speechSynthesis) {
+      // Auto advance fallback after 4 seconds if speech is unsupported
+      setTimeout(() => {
+        handleNarrationEnded();
+      }, 4000);
+      return;
+    }
+
     window.speechSynthesis.cancel();
     const cleanText = text.replace(/[*#_~`[\]()]/g, "").trim();
     const utterance = new SpeechSynthesisUtterance(cleanText);
@@ -166,25 +169,55 @@ export default function Storybook() {
 
     utterance.pitch = 0.95;
     utterance.rate = 0.9;
-    if (audioRef.current) audioRef.current.volume = 0.05;
+    if (audioRef.current) audioRef.current.volume = 0.05; // Duck background music
 
     utterance.onend = () => {
-      setActiveSpeech(false);
-      if (audioRef.current) audioRef.current.volume = 0.25;
+      handleNarrationEnded();
     };
 
     utterance.onerror = () => {
-      setActiveSpeech(false);
-      if (audioRef.current) audioRef.current.volume = 0.25;
+      handleNarrationEnded();
     };
 
     setActiveSpeech(true);
     window.speechSynthesis.speak(utterance);
   };
 
+  const handleNarrationEnded = () => {
+    setActiveSpeech(false);
+    if (audioRef.current) audioRef.current.volume = 0.25; // Restore background volume
+    
+    // Auto advance ONLY if we are in autoplay sequence mode!
+    if (isPlaying) {
+      setActiveSceneIndex((prev) => {
+        if (prev === GITA_SCENES.length - 1) {
+          return 0; // loop back to first slide
+        }
+        return prev + 1;
+      });
+    }
+  };
+
+  const handleSpeakerClick = () => {
+    if (isPlaying) {
+      setIsPlaying(false); // Stop sequence
+    } else {
+      if (activeSpeech) {
+        stopVoiceNarrationOnly();
+      } else {
+        playActiveSceneNarration(activeSceneIndex);
+      }
+    }
+  };
+
+  // Sync autoplay state changes and scene changes to active audio narration
   useEffect(() => {
-    stopAllNarration();
-  }, [activeSceneIndex]);
+    if (isPlaying) {
+      playActiveSceneNarration(activeSceneIndex);
+    } else {
+      stopVoiceNarrationOnly();
+    }
+  }, [activeSceneIndex, isPlaying]);
 
   useEffect(() => {
     updateMetaTags(
@@ -193,29 +226,19 @@ export default function Storybook() {
       "Gita Kannada storybook, animated Gita stories, Krishna Arjuna stories, Mahabharata cartoon Kannada, Bhagavad Gita visual book"
     );
 
-    // Initialize audio
+    // Initialize background audio
     audioRef.current = new Audio("https://gita.sanatana360.com/Krishna.mp3");
     audioRef.current.loop = true;
     audioRef.current.volume = 0.25;
 
     return () => {
+      stopVoiceNarrationOnly();
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
       }
     };
   }, []);
-
-  // Auto-play slides logic
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setActiveSceneIndex((prev) => (prev + 1) % GITA_SCENES.length);
-      }, 7500); // cycle every 7.5 seconds
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying]);
 
   const togglePlayback = () => {
     if (!audioRef.current) return;
@@ -282,148 +305,123 @@ export default function Storybook() {
         {/* Storybook Hero Visualizer */}
         <div className="relative aspect-video w-full rounded-3xl overflow-hidden border border-primary/45 shadow-2xl bg-gradient-to-b from-amber-950 via-slate-900 to-amber-950 p-6 flex flex-col justify-between select-none min-h-[320px]">
           
-          {showVideoMode ? (
-            <div className="absolute inset-0 w-full h-full bg-black z-0">
-              <iframe
-                src={`https://www.youtube.com/embed/${activeScene.youtubeId}?start=${activeScene.startSeconds}&autoplay=1&mute=1&rel=0&enablejsapi=1`}
-                title={activeScene.titleEn}
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-              <div className="absolute inset-0 bg-black/40 pointer-events-none" /> {/* soft overlay to boost text contrast */}
-            </div>
-          ) : (
-            /* Dynamic Animated Vector Graphics Background */
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
-              <AnimatePresence mode="wait">
-                {activeScene.sceneName === "battlefield" && (
-                  <motion.div
-                    key="battle"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 0.25, scale: 1 }}
-                    exit={{ opacity: 0, scale: 1.2 }}
-                    transition={{ duration: 1 }}
-                    className="w-full h-full flex items-center justify-center"
-                  >
-                    {/* Chariot Silhouette SVG */}
-                    <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 fill-amber-500">
-                      <path d="M10,80 L90,80 L75,50 L25,50 Z" />
-                      <circle cx="35" cy="85" r="10" stroke="#f59e0b" strokeWidth="2" />
-                      <circle cx="65" cy="85" r="10" stroke="#f59e0b" strokeWidth="2" />
-                      <path d="M50,50 L50,15 L65,25 Z" fill="#ea580c" />
-                    </svg>
-                  </motion.div>
-                )}
+          {/* Dynamic Animated Vector Graphics Background */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+            <AnimatePresence mode="wait">
+              {activeScene.sceneName === "battlefield" && (
+                <motion.div
+                  key="battle"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 0.25, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.2 }}
+                  transition={{ duration: 1 }}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  {/* Chariot Silhouette SVG */}
+                  <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 fill-amber-500">
+                    <path d="M10,80 L90,80 L75,50 L25,50 Z" />
+                    <circle cx="35" cy="85" r="10" stroke="#f59e0b" strokeWidth="2" />
+                    <circle cx="65" cy="85" r="10" stroke="#f59e0b" strokeWidth="2" />
+                    <path d="M50,50 L50,15 L65,25 Z" fill="#ea580c" />
+                  </svg>
+                </motion.div>
+              )}
 
-                {activeScene.sceneName === "despondency" && (
-                  <motion.div
-                    key="bow"
-                    initial={{ opacity: 0, rotate: -45 }}
-                    animate={{ opacity: 0.25, rotate: 12 }}
-                    exit={{ opacity: 0, y: 100 }}
-                    transition={{ duration: 1 }}
-                    className="w-full h-full flex items-center justify-center"
-                  >
-                    {/* Bow (Gandiva) SVG */}
-                    <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 stroke-amber-400 fill-none" strokeWidth="3">
-                      <path d="M 30 10 C 60 10, 80 40, 80 50 C 80 60, 60 90, 30 90" />
-                      <line x1="30" y1="10" x2="30" y2="90" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
-                    </svg>
-                  </motion.div>
-                )}
+              {activeScene.sceneName === "despondency" && (
+                <motion.div
+                  key="bow"
+                  initial={{ opacity: 0, rotate: -45 }}
+                  animate={{ opacity: 0.25, rotate: 12 }}
+                  exit={{ opacity: 0, y: 100 }}
+                  transition={{ duration: 1 }}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  {/* Bow (Gandiva) SVG */}
+                  <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 stroke-amber-400 fill-none" strokeWidth="3">
+                    <path d="M 30 10 C 60 10, 80 40, 80 50 C 80 60, 60 90, 30 90" />
+                    <line x1="30" y1="10" x2="30" y2="90" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+                  </svg>
+                </motion.div>
+              )}
 
-                {activeScene.sceneName === "soul" && (
-                  <motion.div
-                    key="soul"
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 0.3, scale: [1, 1.2, 1] }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                    className="w-full h-full flex items-center justify-center"
-                  >
-                    {/* Glowing Spark Atman SVG */}
-                    <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 fill-amber-300">
-                      <path d="M50,10 Q60,40 90,50 Q60,60 50,90 Q40,60 10,50 Q40,40 50,10 Z" />
-                    </svg>
-                  </motion.div>
-                )}
+              {activeScene.sceneName === "soul" && (
+                <motion.div
+                  key="soul"
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 0.3, scale: [1, 1.2, 1] }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  {/* Glowing Spark Atman SVG */}
+                  <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 fill-amber-300">
+                    <path d="M50,10 Q60,40 90,50 Q60,60 50,90 Q40,60 10,50 Q40,40 50,10 Z" />
+                  </svg>
+                </motion.div>
+              )}
 
-                {activeScene.sceneName === "karma" && (
-                  <motion.div
-                    key="lotus"
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 0.25, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 1 }}
-                    className="w-full h-full flex items-center justify-center"
-                  >
-                    {/* Lotus SVG */}
-                    <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 fill-pink-500">
-                      <path d="M50,20 C60,40 90,60 50,90 C10,60 40,40 50,20 Z" />
-                      <path d="M50,40 C65,55 80,65 50,90 C20,65 35,55 50,40 Z" fill="#f43f5e" opacity="0.8" />
-                    </svg>
-                  </motion.div>
-                )}
+              {activeScene.sceneName === "karma" && (
+                <motion.div
+                  key="lotus"
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 0.25, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 1 }}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  {/* Lotus SVG */}
+                  <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 fill-pink-500">
+                    <path d="M50,20 C60,40 90,60 50,90 C10,60 40,40 50,20 Z" />
+                    <path d="M50,40 C65,55 80,65 50,90 C20,65 35,55 50,40 Z" fill="#f43f5e" opacity="0.8" />
+                  </svg>
+                </motion.div>
+              )}
 
-                {activeScene.sceneName === "vishwarupa" && (
-                  <motion.div
-                    key="universe"
-                    initial={{ opacity: 0, rotate: 0 }}
-                    animate={{ opacity: 0.25, rotate: 360 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                    className="w-full h-full flex items-center justify-center"
-                  >
-                    {/* Starry Galaxy swirl */}
-                    <svg viewBox="0 0 100 100" className="w-2/3 h-2/3 stroke-purple-400 fill-none" strokeWidth="1">
-                      <circle cx="50" cy="50" r="10" />
-                      <circle cx="50" cy="50" r="25" strokeDasharray="5 5" />
-                      <circle cx="50" cy="50" r="40" strokeDasharray="10 5" />
-                    </svg>
-                  </motion.div>
-                )}
+              {activeScene.sceneName === "vishwarupa" && (
+                <motion.div
+                  key="universe"
+                  initial={{ opacity: 0, rotate: 0 }}
+                  animate={{ opacity: 0.25, rotate: 360 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  {/* Starry Galaxy swirl */}
+                  <svg viewBox="0 0 100 100" className="w-2/3 h-2/3 stroke-purple-400 fill-none" strokeWidth="1">
+                    <circle cx="50" cy="50" r="10" />
+                    <circle cx="50" cy="50" r="25" strokeDasharray="5 5" />
+                    <circle cx="50" cy="50" r="40" strokeDasharray="10 5" />
+                  </svg>
+                </motion.div>
+              )}
 
-                {activeScene.sceneName === "surrender" && (
-                  <motion.div
-                    key="feet"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 0.3, scale: 1.05 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-                    className="w-full h-full flex items-center justify-center"
-                  >
-                    {/* Lotus Feet / Surrender Om Watermark */}
-                    <div className="text-white text-[150px] font-serif font-bold">ॐ</div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
+              {activeScene.sceneName === "surrender" && (
+                <motion.div
+                  key="feet"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 0.3, scale: 1.05 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  {/* Lotus Feet / Surrender Om Watermark */}
+                  <div className="text-white text-[150px] font-serif font-bold">ॐ</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Top Panel: Control indicators */}
           <div className="relative z-10 flex items-center justify-between w-full">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full backdrop-blur-sm">
-                Gita Lesson {activeSceneIndex + 1} of {GITA_SCENES.length}
-              </span>
-              
-              {/* Mode Switch Toggle Button */}
-              <button
-                onClick={() => setShowVideoMode(!showVideoMode)}
-                className="text-[10px] font-extrabold uppercase tracking-wider text-white bg-primary/80 hover:bg-primary border border-primary/40 px-2.5 py-1 rounded-full backdrop-blur-sm transition-all cursor-pointer flex items-center gap-1 shadow-md font-sans"
-                title="Switch between Cartoon Video and Devotional Art Mode"
-              >
-                {showVideoMode ? <Sparkles className="h-3 w-3" /> : <Film className="h-3 w-3" />}
-                {showVideoMode ? "View Art Mode" : "Play Video Mode"}
-              </button>
-            </div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full backdrop-blur-sm">
+              Gita Lesson {activeSceneIndex + 1} of {GITA_SCENES.length}
+            </span>
 
             {/* Live Play status indicator */}
             <div className="flex items-center gap-1.5">
               <span className={`h-2 w-2 rounded-full ${isPlaying ? "bg-green-500 animate-ping" : "bg-amber-500"}`} />
               <span className="text-[9px] font-extrabold uppercase tracking-wider text-white/80">
-                {isPlaying ? "Auto-cycling Active" : "Paused"}
+                {isPlaying ? "Autoplay Active" : "Paused"}
               </span>
             </div>
           </div>
@@ -437,7 +435,7 @@ export default function Storybook() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.5 }}
-                className="space-y-3 bg-black/60 backdrop-blur-md border border-white/10 px-6 py-4 rounded-3xl max-w-2xl mx-auto shadow-xl"
+                className="space-y-3"
               >
                 <div className="space-y-0.5">
                   <h3 className="text-lg md:text-xl font-bold text-gradient-gold">
@@ -480,7 +478,7 @@ export default function Storybook() {
 
               {/* Speak/Voice Narration Button */}
               <button
-                onClick={() => handleVoiceNarration(activeScene.kannadaText, "kn")}
+                onClick={handleSpeakerClick}
                 className={`p-2 rounded-full border transition-all cursor-pointer flex items-center justify-center ${
                   activeSpeech 
                     ? "bg-green-600 border-green-600 text-white animate-pulse" 

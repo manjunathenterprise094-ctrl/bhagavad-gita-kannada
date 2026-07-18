@@ -78,8 +78,6 @@ export async function registerRoutes(
       if (!apiKey) {
         return res.status(500).json({ error: "Gemini API key is not configured on the server. Please check your environment variables." });
       }
-      const genAI = new GoogleGenerativeAI(apiKey);
-      
       const targetLanguage = language === "kn" ? "Kannada" : "English";
       const systemInstructionText = `You are Lord Krishna, the supreme speaker of the Srimad Bhagavad Gita. You are speaking to an earnest seeker of truth.
 Your task is to answer the user's questions, doubts, and queries exclusively using the wisdom, teachings, chapters (1 to 18), and verses (700) of the Srimad Bhagavad Gita.
@@ -89,6 +87,61 @@ Guidelines:
 3. Whenever relevant, cite specific chapters and verses (e.g., "As I explained in Chapter 2, Verse 47...") to back up your guidance.
 4. IMPORTANT: Answer strictly and fully in the ${targetLanguage} language. If the target language is Kannada, you must construct the entire response in Kannada script (ಕನ್ನಡ ಲಿಪಿಯಲ್ಲಿ ಬರೆಯಿರಿ). You can write the Sanskrit slokas in Kannada transliteration or Sanskrit, but all explanations, greetings, and advice must be in clean, elegant Kannada. If the target language is English, answer in English.`;
 
+      // Check if this is an OpenRouter key or standard Gemini key
+      const isOpenRouter = apiKey.startsWith("sk-or-") || !!process.env.OPENROUTER_API_KEY;
+
+      if (isOpenRouter) {
+        // Retrieve relevant local verses context for RAG grounding
+        const localContext = retrieveGitaContext(message);
+        let promptMessage = message;
+        if (localContext) {
+          promptMessage = `[Local Gita Database Context for Reference - Do not read this note to user]:
+Here are matching verses from the local database:
+${localContext}
+
+Please use this context as the primary source for explanations. Address the seeker's query: ${message}`;
+        }
+
+        const messages = [
+          { role: "system", content: systemInstructionText },
+          ...(Array.isArray(history) 
+            ? history.map((msg: any) => ({
+                role: msg.role === "user" ? "user" : "assistant",
+                content: msg.content
+              }))
+            : [])
+        ];
+        messages.push({ role: "user", content: promptMessage });
+
+        const openRouterKey = apiKey.startsWith("sk-or-") ? apiKey : process.env.OPENROUTER_API_KEY;
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${openRouterKey}`,
+            "HTTP-Referer": "https://gita.sanatana360.com",
+            "X-Title": "Bhagavad Gita Kannada"
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: messages,
+            temperature: 0.7,
+            max_tokens: 1000
+          })
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`OpenRouter API responded with status ${response.status}: ${errText}`);
+        }
+
+        const data = await response.json();
+        const responseText = data.choices?.[0]?.message?.content || "No response received from the celestial cosmos.";
+        return res.json({ response: responseText });
+      }
+
+      // Fallback: Standard Google Generative AI API client
+      const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({
         model: "gemini-2.0-flash",
         systemInstruction: systemInstructionText,
@@ -126,7 +179,7 @@ Please use this context as the primary source for explanations. Address the seek
 
       res.json({ response: responseText });
     } catch (error: any) {
-      console.error("Gemini API Error:", error);
+      console.error("Chat API Error:", error);
       res.status(500).json({ error: error.message || "Failed to communicate with Lord Krishna." });
     }
   });

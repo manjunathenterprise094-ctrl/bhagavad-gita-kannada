@@ -74,7 +74,7 @@ const GITA_SCENES: StoryScene[] = [
   }
 ];
 
-export default function Videos() {
+export default function Storybook() {
   const [activeSceneIndex, setActiveSceneIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
@@ -85,9 +85,9 @@ export default function Videos() {
 
   useEffect(() => {
     updateMetaTags(
-      "Interactive Animated Bhagavad Gita Stories | Kannada & English",
+      "Gita Interactive Devotional Storybook | Kannada & English",
       "Experience the visual storybook of Srimad Bhagavad Gita in Kannada and English with devotional flute audio, animated scenes, and key teachings.",
-      "Gita Kannada cartoon, animated Gita stories, Krishna Arjuna stories, Mahabharata cartoon Kannada, Bhagavad Gita visual book"
+      "Gita Kannada storybook, animated Gita stories, Krishna Arjuna stories, Mahabharata cartoon Kannada, Bhagavad Gita visual book"
     );
 
     // Initialize audio
@@ -154,7 +154,7 @@ export default function Videos() {
               <ArrowLeft className="h-4 w-4 text-foreground" />
             </Link>
             <h1 className="text-base sm:text-lg font-bold text-gradient-gold">
-              Gita Devotional Storybook
+              Gita Storybook • ಗೀತಾ ಕಥಾಪುಸ್ತಕ
             </h1>
           </div>
           
@@ -313,7 +313,7 @@ export default function Videos() {
               >
                 <div className="space-y-0.5">
                   <h3 className="text-lg md:text-xl font-bold text-gradient-gold">
-                    {activeVideoTitle(activeScene.titleKn)}
+                    {activeScene.titleKn}
                   </h3>
                   <h4 className="text-xs font-semibold text-white/70 font-serif">
                     {activeScene.titleEn}
@@ -424,8 +424,4 @@ export default function Videos() {
       <FloatingChatButton />
     </div>
   );
-}
-
-function activeVideoTitle(title: string): string {
-  return title;
 }

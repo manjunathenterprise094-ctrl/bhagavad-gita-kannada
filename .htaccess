@@ -16,4 +16,4 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
 # Otherwise, hand the path over to Node.js (which handles both API and SPA routing)
-RewriteRule ^(.*)$ app.js/$1 [QSA,L]
+RewriteRule ^(.*)$ /app.js [QSA,L]

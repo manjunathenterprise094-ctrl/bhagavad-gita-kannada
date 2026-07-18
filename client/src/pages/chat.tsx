@@ -14,10 +14,124 @@ import {
 } from "./home";
 import { updateMetaTags } from "@/lib/seo";
 import { useSpeech } from "@/lib/speech";
+import { bhagavadGitaData } from "@/lib/gita-data";
 
 interface Message {
   role: "user" | "model";
   content: string;
+}
+
+function generateLocalKrishnaResponse(query: string, lang: "en" | "kn"): string {
+  if (!query) return "";
+
+  const cleanQuery = query.toLowerCase().trim();
+  const searchTerms = cleanQuery.split(/\s+/).filter(t => t.length > 2);
+  
+  if (searchTerms.length === 0) {
+    return lang === "en"
+      ? "My dear friend, please ask a clear question so I can guide you on your spiritual path."
+      : "ನನ್ನ ಪ್ರೀತಿಯ ಸ್ನೇಹಿತನೇ, ನಿನ್ನ ಆಧ್ಯಾತ್ಮಿಕ ಪಥದಲ್ಲಿ ನಿನಗೆ ಮಾರ್ಗದರ್ಶನ ಮಾಡಲು ದಯವಿಟ್ಟು ಸ್ಪಷ್ಟವಾದ ಪ್ರಶ್ನೆಯನ್ನು ಕೇಳು.";
+  }
+
+  interface ScoredVerse {
+    chapterId: number;
+    verseNumber: number;
+    kannada: string;
+    transliteration: string;
+    meaning: string;
+    score: number;
+  }
+
+  const scored: ScoredVerse[] = [];
+
+  for (const chapter of bhagavadGitaData) {
+    for (const verse of chapter.verses) {
+      let score = 0;
+      const textToSearch = `${chapter.title} ${chapter.kannadaTitle} ${verse.kannada} ${verse.transliteration} ${verse.meaning}`.toLowerCase();
+
+      for (const term of searchTerms) {
+        if (textToSearch.includes(term)) {
+          score += 1;
+          if (verse.meaning.toLowerCase().includes(term)) score += 2;
+        }
+      }
+
+      if (score > 0) {
+        scored.push({
+          chapterId: chapter.id,
+          verseNumber: verse.verse,
+          kannada: verse.kannada,
+          transliteration: verse.transliteration,
+          meaning: verse.meaning,
+          score
+        });
+      }
+    }
+  }
+
+  const topVerses = scored.sort((a, b) => b.score - a.score).slice(0, 2);
+
+  if (topVerses.length === 0) {
+    if (lang === "kn") {
+      return `ನನ್ನ ಪ್ರೀತಿಯ ಅರ್ಜುನನೇ, ನಿನ್ನ ಪ್ರಶ್ನೆಯು ಯೋಚಿಸಬೇಕಾದದ್ದಾಗಿದೆ. ಜೀವನದ ಎಲ್ಲಾ ಗೊಂದಲಗಳು ಮತ್ತು ಚಿಂತೆಗಳಿಗೆ ನಿನ್ನ ಕರ್ತವ್ಯವನ್ನು ಅರಿತು ಫಲದ ಆಸೆಯಿಲ್ಲದೆ ಕೆಲಸ ಮಾಡುವುದೇ ಸರಿಯಾದ ಪರಿಹಾರವಾಗಿದೆ. 
+
+ನಿನ್ನ ಮನಸ್ಸನ್ನು ನನ್ನಲ್ಲಿ ನೆಲೆಗೊಳಿಸು, ಯೋಗಾಭ್ಯಾಸ ಮಾಡು ಮತ್ತು ಆತ್ಮದ ಅಮರತ್ವವನ್ನು ನಂಬು. ನೀನು ಎಂದಿಗೂ ನಾಶವಾಗದ ಚೇತನವಾಗಿದ್ದೀಯೆ, ಶರೀರವಲ್ಲ. 
+
+ಚಿಂತಿಸಬೇಡ, ನನ್ನನ್ನು ಶರಣು ಹೊಂದು. ನಾನು ನಿನ್ನನ್ನು ಎಲ್ಲಾ ತೊಂದರೆಗಳಿಂದ ಮುನ್ನಡೆಸುತ್ತೇನೆ.`;
+    } else {
+      return `My dear friend, your heart seeks clarity. Remember that the ultimate peace is found within. Do not be troubled by temporary joys or sorrows, as they are like passing seasons. 
+
+Focus on performing your prescribed duties (Dharma) with a pure intent, without being attached to the results. Withdraw your senses from distractions, cultivate a calm mind through meditation, and surrender all doubts to Me. I am always seated in your heart, guiding you.`;
+    }
+  }
+
+  const primary = topVerses[0];
+  
+  if (lang === "kn") {
+    let response = `ನನ್ನ ಪ್ರೀತಿಯ ಸತ್ಯಾನ್ವೇಷಿಯೇ, ನಿನ್ನ ಸಂದೇಹಕ್ಕೆ ಭಗವದ್ಗೀತೆಯ ${primary.chapterId}ನೇ ಅಧ್ಯಾಯದ ${primary.verseNumber}ನೇ ಶ್ಲೋಕದಲ್ಲಿ ಉತ್ತರವಿದೆ:
+
+ಶ್ಲೋಕ (ಸಂಸ್ಕೃತ):
+"${primary.kannada}"
+
+ಭಾವಾರ್ಥ:
+"${primary.meaning}"
+
+`;
+
+    if (cleanQuery.includes("ಚಿಂತೆ") || cleanQuery.includes("ಭಯ") || cleanQuery.includes("ದುಃಖ") || cleanQuery.includes("worry") || cleanQuery.includes("fear")) {
+      response += `ಇದರಿಂದ ತಿಳಿಯುವುದೇನೆಂದರೆ, ಮನುಷ್ಯನು ಹಗಲಿರುಳು ಚಿಂತಿಸುವುದರಿಂದ ಯಾವುದೇ ಪ್ರಯೋಜನವಿಲ್ಲ. ನಶ್ವರವಾದ ದೇಹಕ್ಕಾಗಿ ಶೋಕಿಸಬೇಡ. ಆತ್ಮನಿಗೆ ಎಂದಿಗೂ ಸಾವಿಲ್ಲ. ನಿನ್ನ ಎಲ್ಲಾ ಕರ್ತವ್ಯಗಳನ್ನು ಭಗವಂತನಿಗೆ ಸಮರ್ಪಿಸಿ ಭಯರಹಿತನಾಗಿ ಧರ್ಮಮಾರ್ಗದಲ್ಲಿ ಮುನ್ನಡೆ.`;
+    } else if (cleanQuery.includes("ಮನಸ್ಸು") || cleanQuery.includes("ಧ್ಯಾನ") || cleanQuery.includes("mind") || cleanQuery.includes("control")) {
+      response += `ಇದರಿಂದ ತಿಳಿಯುವುದೇನೆಂದರೆ, ಚಂಚಲವಾದ ಮನಸ್ಸನ್ನು ಅಭ್ಯಾಸ ಮತ್ತು ವೈರಾಗ್ಯದಿಂದ ಮಾತ್ರ ಹತೋಟಿಗೆ ತರಲು ಸಾಧ್ಯ. ಮನಸ್ಸೇ ಮನುಷ್ಯನಿಗೆ ಮಿತ್ರನೂ ಹೌದು, ವೈರಿಯೂ ಹೌದು. ಸದಾ ನಿನ್ನ ಮನಸ್ಸನ್ನು ನಿಯಂತ್ರಣದಲ್ಲಿಟ್ಟುಕೊಳ್ಳಲು ಪ್ರಯತ್ನಿಸು.`;
+    } else if (cleanQuery.includes("ಕೆಲಸ") || cleanQuery.includes("ಕರ್ತವ್ಯ") || cleanQuery.includes("duty") || cleanQuery.includes("work")) {
+      response += `ಇದರಿಂದ ತಿಳಿಯುವುದೇನೆಂದರೆ, ನಿನ್ನ ಕೆಲಸವನ್ನು ಫಲದ ಅಪೇಕ್ಷೆಯಿಲ್ಲದೆ ಶ್ರದ್ಧೆಯಿಂದ ಮಾಡು. ಕರ್ಮವನ್ನು ತ್ಯಜಿಸುವುದು ಯೋಗಾಭ್ಯಾಸವಲ್ಲ, ಕರ್ಮಫಲದ ಆಸೆಯನ್ನು ತ್ಯಜಿಸುವುದೇ ನಿಜವಾದ ಯೋಗವಾಗಿದೆ.`;
+    } else {
+      response += `ಈ ಪರಮ ಜ್ಞಾನವನ್ನು ಅರಿತು, ಚಂಚಲತೆಯನ್ನು ಬಿಟ್ಟು ನಿನ್ನ ನಿತ್ಯ ಕರ್ತವ್ಯಗಳನ್ನು ಶ್ರದ್ಧೆಯಿಂದ ನಿರ್ವಹಿಸು. ಯಾವಾಗಲೂ ನನ್ನಲ್ಲಿ ಭಕ್ತಿ ಹೊಂದಿದ್ದರೆ ನೀನು ಪರಮ ಶಾಂತಿಯನ್ನು ಪಡೆಯುತ್ತೀಯೆ.`;
+    }
+    
+    return response;
+  } else {
+    let response = `My dear friend, to resolve your doubt, let us reflect on the divine wisdom I spoke to Arjuna in Chapter ${primary.chapterId}, Verse ${primary.verseNumber}:
+
+Sloka (Sanskrit):
+"${primary.transliteration}"
+
+Translation:
+"${primary.meaning}"
+
+`;
+
+    if (cleanQuery.includes("worry") || cleanQuery.includes("fear") || cleanQuery.includes("anxiety") || cleanQuery.includes("sad")) {
+      response += `This teaches us that you should not lament for the temporary. The soul is immortal; it cannot be cut by weapons or burned by fire. Cast away your anxieties, perform your duty, and find refuge in Me. I shall guide you through all distress.`;
+    } else if (cleanQuery.includes("mind") || cleanQuery.includes("control") || cleanQuery.includes("focus") || cleanQuery.includes("thoughts")) {
+      response += `This teaches us that although the mind is restless and difficult to curb, it can be conquered by constant spiritual practice (abhyasa) and detachment (vairagya). Train your mind to seek the divinity within.`;
+    } else if (cleanQuery.includes("work") || cleanQuery.includes("duty") || cleanQuery.includes("result") || cleanQuery.includes("career")) {
+      response += `This teaches us that you have a right to action, but not to the fruits of your action. Work with dedication but let go of the attachment to success or failure. This selfless dedication is the secret to true peace (Karma Yoga).`;
+    } else {
+      response += `Contemplate this eternal wisdom, free your heart from attachments, and walk steadily on the path of Dharma. By surrendering your doubts and actions to Me, you will reach the state of pure consciousness.`;
+    }
+
+    return response;
+  }
 }
 
 export default function Chat() {
@@ -127,18 +241,17 @@ export default function Chat() {
         setTimeout(() => speak(idx.toString(), krishnaResponse, language), 400);
       }
     } catch (err: any) {
-      console.error("Chat Error:", err);
-      let friendlyMessage = err.message || "Please try asking again.";
-      if (friendlyMessage.includes("Unexpected token '<'") || friendlyMessage.includes("DOCTYPE")) {
-        friendlyMessage = "The server returned HTML instead of JSON. This usually indicates that the Node.js backend is offline or misconfigured, or the API route was redirected to the index.html page.";
+      console.warn("Backend API unavailable, falling back to offline Gita engine:", err);
+      // Run local client-side RAG engine
+      const krishnaResponse = generateLocalKrishnaResponse(userMessage, language);
+      const newMessages = [...updatedMessages, { role: "model" as const, content: krishnaResponse }];
+      setMessages(newMessages);
+      
+      // Auto-read response aloud if the user has enabled Auto Listen
+      if (autoListen) {
+        const idx = newMessages.length - 1;
+        setTimeout(() => speak(idx.toString(), krishnaResponse, language), 400);
       }
-      setMessages([
-        ...updatedMessages,
-        { 
-          role: "model", 
-          content: `My dear friend, my connection to the cosmos was interrupted: ${friendlyMessage}` 
-        }
-      ]);
     } finally {
       setIsLoading(false);
     }

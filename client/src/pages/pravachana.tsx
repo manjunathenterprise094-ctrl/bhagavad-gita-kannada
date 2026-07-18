@@ -9,6 +9,7 @@ import {
   ProgressBar, ParticlesBackdrop
 } from "./home";
 import { updateMetaTags } from "@/lib/seo";
+import Navbar from "@/components/Navbar";
 
 interface Track {
   id: number;
@@ -327,30 +328,7 @@ export default function Pravachana() {
         <div className="absolute bottom-1/4 -left-48 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/85 backdrop-blur">
-        <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <Link 
-              href="/" 
-              className="mr-1 p-2 rounded-xl hover:bg-primary/10 hover:text-primary transition-colors flex items-center justify-center border border-border/50 bg-background/30"
-              aria-label="Return home"
-            >
-              <ArrowLeft className="h-4.5 w-4.5 text-foreground" />
-            </Link>
-            <span className="font-bold text-lg text-primary tracking-wide">
-              Bhagavad Gita Audio · ಗೀತಾ ಶ್ರವಣ
-            </span>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
-            <Link href="/" className="hover:text-primary transition-all">Home</Link>
-            <Link href="/chapters" className="hover:text-primary transition-all">Chapters</Link>
-            <Link href="/verses" className="hover:text-primary transition-all">Verses</Link>
-            <Link href="/chat" className="hover:text-primary transition-all">Ask Krishna</Link>
-          </nav>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Audio Element */}
       <audio

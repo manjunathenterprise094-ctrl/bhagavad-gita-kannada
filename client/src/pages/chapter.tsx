@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { ProgressBar, ParticlesBackdrop, AudioWidget, MobileNavDrawer, FloatingChatButton } from "./home";
+import Navbar from "@/components/Navbar";
 import { updateMetaTags, updateSchemaOrg } from "@/lib/seo";
 import { useSpeech } from "@/lib/speech";
 import { getSadhanaStats, markVerseCompleted, unmarkVerseCompleted, type SadhanaStats } from "@/lib/sadhana";
@@ -25,8 +26,8 @@ export default function Chapter() {
 
   const chapter = bhagavadGitaData.find((c) => c.id === chapterId);
   const [fontSize, setFontSize] = useState(18);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
+  const [selectedLanguage, setSelectedLanguage] = useState<"kn" | "en">("kn");
   
   // Sadhana & WhatsApp Card States
   const [sadhana, setSadhana] = useState<SadhanaStats>({ streakCount: 0, lastReadDate: null, completedVerses: [] });
@@ -257,62 +258,9 @@ export default function Chapter() {
       <ProgressBar />
       <ParticlesBackdrop />
       <AudioWidget />
-      <MobileNavDrawer isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      <Navbar />
 
-      {/* Sticky Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/85 backdrop-blur">
-        <div className="max-w-5xl mx-auto flex h-14 items-center px-4">
-          <Link 
-            href="/" 
-            className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "mr-2 hover:bg-primary/10 hover:text-primary")}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <div className="flex-1 overflow-hidden text-left">
-            <h1 className="text-lg font-bold truncate">
-              <span className="text-primary mr-2">{chapter.id}.</span>
-              {chapter.kannadaTitle}
-            </h1>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="hover:bg-primary/10 hover:text-primary" aria-label="Text settings">
-                  <Type className="h-5 w-5" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64 p-4 mr-4">
-                <div className="space-y-4">
-                  <h4 className="font-medium leading-none text-left">Text Size</h4>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm">A</span>
-                    <Slider 
-                      value={[fontSize]} 
-                      min={14} 
-                      max={28} 
-                      step={1} 
-                      onValueChange={(vals) => setFontSize(vals[0])}
-                      className="flex-1"
-                    />
-                    <span className="text-xl">A</span>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
 
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setIsMenuOpen(true)}
-              className="hover:bg-primary/10 hover:text-primary md:hidden"
-              aria-label="Open menu"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </header>
 
       {/* Chapter Intro */}
       <div className="bg-muted/30 border-b border-border/50">
@@ -332,8 +280,37 @@ export default function Chapter() {
         </div>
       </div>
 
+      {/* Font Size & Translation Controls */}
+      <div className="max-w-4xl mx-auto px-4 mt-6 flex justify-end">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="hover:bg-primary/10 hover:text-primary gap-1.5 font-sans font-semibold rounded-xl text-xs cursor-pointer" aria-label="Text settings">
+              <Type className="h-4 w-4" />
+              Adjust Font Size
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-4 mr-4">
+            <div className="space-y-4">
+              <h4 className="font-medium leading-none text-left">Text Size</h4>
+              <div className="flex items-center gap-4">
+                <span className="text-sm">A</span>
+                <Slider 
+                  value={[fontSize]} 
+                  min={14} 
+                  max={28} 
+                  step={1} 
+                  onValueChange={(vals) => setFontSize(vals[0])}
+                  className="flex-1"
+                />
+                <span className="text-xl">A</span>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+
       {/* Verses List */}
-      <main className="max-w-4xl mx-auto py-8 px-4 space-y-8">
+      <main className="max-w-4xl mx-auto py-4 px-4 space-y-8">
         {chapter.verses.map((verse) => (
           <div 
             key={verse.id} 

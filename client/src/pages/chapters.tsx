@@ -12,9 +12,9 @@ import {
   ProgressBar, ParticlesBackdrop, AudioWidget, MobileNavDrawer, FloatingChatButton 
 } from "./home";
 import { updateMetaTags } from "@/lib/seo";
+import Navbar from "@/components/Navbar";
 
 export default function Chapters() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedPath, setSelectedPath] = useState("all");
   const [query, setQuery] = useState("");
 
@@ -55,7 +55,7 @@ export default function Chapters() {
       <ProgressBar />
       <ParticlesBackdrop />
       <AudioWidget />
-      <MobileNavDrawer isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      <Navbar />
 
       {/* Floating Circles for ambiance */}
       <div className="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
@@ -63,38 +63,7 @@ export default function Chapters() {
         <div className="absolute bottom-1/4 -left-48 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl animate-pulse" />
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/85 backdrop-blur">
-        <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="h-8 w-8 bg-primary rounded-xl flex items-center justify-center text-white shadow-md font-bold font-serif cursor-pointer">
-              ॐ
-            </Link>
-            <span className="font-bold text-lg text-primary tracking-wide">
-              Bhagavad Gita
-            </span>
-          </div>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="/" className="text-muted-foreground hover:text-primary transition-all">Home</Link>
-            <Link href="/chapters" className="text-primary hover:text-primary transition-all">Chapters</Link>
-            <Link href="/verses" className="text-muted-foreground hover:text-primary transition-all">Verses</Link>
-            <Link href="/bookmarks" className="text-muted-foreground hover:text-primary transition-all">Bookmarks</Link>
-            <Link href="/chat" className="text-muted-foreground hover:text-primary transition-all">Ask Krishna</Link>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setIsMenuOpen(true)}
-              className="md:hidden p-2 rounded-xl border border-primary/20 bg-background/50 hover:bg-primary/10 transition-colors cursor-pointer"
-              aria-label="Open navigation menu"
-            >
-              <Menu className="h-5 w-5 text-foreground" />
-            </button>
-          </div>
-        </div>
-      </header>
 
       {/* Hero Header */}
       <section className="relative pt-12 pb-4 px-4 text-center z-10 font-sans">

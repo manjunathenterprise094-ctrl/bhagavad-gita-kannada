@@ -13,6 +13,7 @@ import {
   ProgressBar, ParticlesBackdrop, AudioWidget, MobileNavDrawer 
 } from "./home";
 import { updateMetaTags } from "@/lib/seo";
+import Navbar from "@/components/Navbar";
 import { useSpeech } from "@/lib/speech";
 import { bhagavadGitaData } from "@/lib/gita-data";
 
@@ -139,7 +140,6 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [autoListen, setAutoListen] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { activeTextId, speak, stop } = useSpeech();
@@ -262,7 +262,7 @@ export default function Chat() {
       <ProgressBar />
       <ParticlesBackdrop />
       <AudioWidget />
-      <MobileNavDrawer isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      <Navbar />
 
       {/* Floating Circles for ambiance */}
       <div className="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
@@ -270,85 +270,7 @@ export default function Chat() {
         <div className="absolute bottom-1/4 -left-48 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl animate-pulse" />
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/85 backdrop-blur">
-        <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <Link 
-              href="/" 
-              className="mr-1 p-2 rounded-xl hover:bg-primary/10 hover:text-primary transition-colors flex items-center justify-center border border-border/50 bg-background/30"
-              aria-label="Return home"
-            >
-              <ArrowLeft className="h-4.5 w-4.5 text-foreground" />
-            </Link>
-            <span className="font-bold text-lg text-primary tracking-wide">
-              Ask Lord Krishna
-            </span>
-          </div>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="/" className="text-muted-foreground hover:text-primary transition-all">Home</Link>
-            <Link href="/chapters" className="text-muted-foreground hover:text-primary transition-all">Chapters</Link>
-            <Link href="/verses" className="text-muted-foreground hover:text-primary transition-all">Verses</Link>
-            <Link href="/bookmarks" className="text-muted-foreground hover:text-primary transition-all">Bookmarks</Link>
-            <Link href="/chat" className="text-primary hover:text-primary transition-all">Ask Krishna</Link>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            {/* Language Toggle */}
-            <div className="flex items-center gap-1 border border-primary/20 bg-background/50 rounded-xl p-0.5 font-sans text-[11px]">
-              <button
-                onClick={() => setLanguage("en")}
-                className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
-                  language === "en" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-primary"
-                }`}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => setLanguage("kn")}
-                className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
-                  language === "kn" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-primary"
-                }`}
-              >
-                ಕನ್ನಡ
-              </button>
-            </div>
-
-            {/* Auto Listen Toggle */}
-            <button
-              type="button"
-              onClick={() => {
-                if (autoListen) stop();
-                setAutoListen(!autoListen);
-              }}
-              className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-sans font-bold transition-all cursor-pointer ${
-                autoListen 
-                  ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/20" 
-                  : "border-primary/20 bg-background/50 text-muted-foreground hover:text-primary hover:border-primary/40"
-              }`}
-              aria-label="Toggle auto listen mode"
-              title={autoListen ? "Auto Listen ON — Krishna's answers will be read aloud" : "Auto Listen OFF — Enable to hear Krishna's voice automatically"}
-            >
-              {autoListen ? (
-                <Volume2 className="h-3.5 w-3.5 animate-pulse" />
-              ) : (
-                <VolumeX className="h-3.5 w-3.5" />
-              )}
-              <span>{autoListen ? "Auto Listen ON" : "Auto Listen"}</span>
-            </button>
-
-            <button 
-              onClick={() => setIsMenuOpen(true)}
-              className="md:hidden p-2 rounded-xl border border-primary/20 bg-background/50 hover:bg-primary/10 transition-colors"
-              aria-label="Open navigation menu"
-            >
-              <Menu className="h-5 w-5 text-foreground" />
-            </button>
-          </div>
-        </div>
-      </header>
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col md:flex-row gap-6 relative z-10 overflow-hidden">
@@ -410,6 +332,47 @@ export default function Chat() {
 
         {/* Right Side: Chat Window */}
         <div className="flex-1 w-full flex flex-col bg-card/65 backdrop-blur-sm border border-border/60 rounded-2xl shadow-xl overflow-hidden min-h-[450px] md:h-[600px] justify-between">
+          {/* Devotional Chat Settings Bar */}
+          <div className="p-3 border-b border-border/50 bg-background/30 flex items-center justify-between gap-3 flex-wrap relative z-20">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-sans text-muted-foreground font-semibold uppercase tracking-wider">Language:</span>
+              <div className="flex items-center gap-0.5 border border-primary/20 bg-background/80 rounded-xl p-0.5 font-sans text-[10px]">
+                <button
+                  onClick={() => setLanguage("en")}
+                  className={`px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    language === "en" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-primary"
+                  }`}
+                >
+                  English
+                </button>
+                <button
+                  onClick={() => setLanguage("kn")}
+                  className={`px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    language === "kn" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-primary"
+                  }`}
+                >
+                  ಕನ್ನಡ
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (autoListen) stop();
+                setAutoListen(!autoListen);
+              }}
+              className={`flex items-center gap-1 px-2.5 py-0.5 rounded-xl border text-[10px] font-sans font-bold transition-all cursor-pointer ${
+                autoListen 
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm" 
+                  : "border-primary/20 bg-background/80 text-muted-foreground hover:text-primary hover:border-primary/40"
+              }`}
+            >
+              {autoListen ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+              {autoListen ? "Auto Listen: On" : "Auto Listen: Off"}
+            </button>
+          </div>
+
           {/* Chat Messages */}
           <ScrollArea className="flex-1 p-4 md:p-6" ref={scrollAreaRef}>
             <div className="space-y-4">

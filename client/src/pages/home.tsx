@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { updateMetaTags, updateSchemaOrg } from "@/lib/seo";
+import Navbar from "@/components/Navbar";
 import { useSpeech } from "@/lib/speech";
 import { getSadhanaStats, type SadhanaStats } from "@/lib/sadhana";
 
@@ -697,7 +698,6 @@ const EMOTION_REMEDIES: Record<string, {
 
 // Main Home Page Component
 export default function Home() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedPath, setSelectedPath] = useState("all");
   const [guidanceVerse, setGuidanceVerse] = useState<any>(null);
   const [isRolling, setIsRolling] = useState(false);
@@ -876,42 +876,7 @@ export default function Home() {
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/85 backdrop-blur">
-        <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <span className="h-9 w-9 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center text-white shadow-md font-bold font-serif text-lg logo-glow">
-              ॐ
-            </span>
-            <span className="font-bold text-lg tracking-wide hidden sm:inline-block text-gradient-gold">
-              Bhagavad Gita
-            </span>
-          </div>
-
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="/" className="nav-link active text-primary font-semibold">Home</Link>
-            <Link href="/chapters" className="nav-link text-muted-foreground hover:text-primary">Chapters</Link>
-            <Link href="/verses" className="nav-link text-muted-foreground hover:text-primary">Verses</Link>
-            <Link href="/bookmarks" className="nav-link text-muted-foreground hover:text-primary">Bookmarks</Link>
-            <Link href="/chat" className="nav-link text-muted-foreground hover:text-primary">Ask Krishna</Link>
-            <Link href="/pravachana" className="nav-link text-muted-foreground hover:text-primary">Listen Gita</Link>
-            <Link href="/storybook" className="nav-link text-muted-foreground hover:text-primary">Gita Storybook</Link>
-            <Link href="/about" className="nav-link text-muted-foreground hover:text-primary">About</Link>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setIsMenuOpen(true)}
-              className="md:hidden p-2 rounded-xl border border-primary/20 bg-background/50 hover:bg-primary/10 transition-all active:scale-95 cursor-pointer"
-              aria-label="Open navigation menu"
-            >
-              <Menu className="h-5 w-5 text-foreground" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <MobileNavDrawer isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      <Navbar />
 
       {/* Hero Banner Section */}
       <section className="relative pt-12 pb-6 px-4 sm:px-6 lg:px-8 text-center z-10">

@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { ProgressBar, ParticlesBackdrop, AudioWidget, MobileNavDrawer, FloatingChatButton, globalAudio } from "./home";
 import { updateMetaTags } from "@/lib/seo";
+import Navbar from "@/components/Navbar";
 
 interface StoryScene {
   id: number;
@@ -92,7 +93,6 @@ export default function Storybook() {
   const [activeSceneIndex, setActiveSceneIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   const [activeSpeech, setActiveSpeech] = useState(false);
   const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -326,34 +326,9 @@ export default function Storybook() {
       <ProgressBar />
       <ParticlesBackdrop />
       <AudioWidget />
-      <MobileNavDrawer isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      <Navbar />
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/85 backdrop-blur">
-        <div className="max-w-5xl mx-auto flex h-14 items-center px-4 justify-between">
-          <div className="flex items-center">
-            <Link href="/" className="mr-3 p-2 rounded-xl border border-primary/20 bg-background/50 hover:bg-primary/10 hover:text-primary transition-all">
-              <ArrowLeft className="h-4 w-4 text-foreground" />
-            </Link>
-            <h1 className="text-base sm:text-lg font-bold text-gradient-gold">
-              Gita Storybook • ಗೀತಾ ಕಥಾಪುಸ್ತಕ
-            </h1>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleMute}
-              className="p-2 rounded-xl border border-primary/20 bg-background/50 text-foreground hover:bg-primary/10 transition-all cursor-pointer"
-              aria-label="Mute sound"
-            >
-              {isAudioMuted ? <VolumeX className="h-4 w-4 text-red-500" /> : <Volume2 className="h-4 w-4 text-primary" />}
-            </button>
-            <Link href="/pravachana" className="px-3.5 py-1.5 rounded-full border border-primary/30 text-xs font-bold hover:bg-primary/10 transition-all text-primary font-sans">
-              Pravachana Audio
-            </Link>
-          </div>
-        </div>
-      </header>
+
 
       {/* Main Container */}
       <main className="max-w-4xl mx-auto py-6 px-4 space-y-6 relative z-10">

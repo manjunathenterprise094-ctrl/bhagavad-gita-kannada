@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { ProgressBar, ParticlesBackdrop, AudioWidget, MobileNavDrawer, FloatingChatButton } from "./home";
-import { updateMetaTags } from "@/lib/seo";
+import { updateMetaTags, updateSchemaOrg } from "@/lib/seo";
 import { useSpeech } from "@/lib/speech";
 import { getSadhanaStats, markVerseCompleted, unmarkVerseCompleted, type SadhanaStats } from "@/lib/sadhana";
 
@@ -200,6 +200,21 @@ export default function Chapter() {
         `Read Srimad Bhagavad Gita Chapter ${chapter.id} (${chapter.title}) with full Kannada translations, Sanskrit slokas, and transliteration: ${chapter.description}`,
         `Chapter ${chapter.id}, ${chapter.title}, ${chapter.kannadaTitle}, Srimad Bhagavad Gita, Kannada translation, Slokas, Verses`
       );
+      updateSchemaOrg({
+        "@context": "https://schema.org",
+        "@type": "Chapter",
+        "name": `Chapter ${chapter.id}: ${chapter.title} - ${chapter.kannadaTitle}`,
+        "description": chapter.description,
+        "position": chapter.id,
+        "isPartOf": {
+          "@type": "Book",
+          "name": "Srimad Bhagavad Gita",
+          "author": {
+            "@type": "Person",
+            "name": "Lord Krishna"
+          }
+        }
+      });
     }
   }, [chapter]);
 

@@ -10,7 +10,7 @@ import {
   MessageSquareMore, Music, Play, Frown, Trophy, Smile, AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { updateMetaTags } from "@/lib/seo";
+import { updateMetaTags, updateSchemaOrg } from "@/lib/seo";
 import { useSpeech } from "@/lib/speech";
 import { getSadhanaStats, type SadhanaStats } from "@/lib/sadhana";
 
@@ -824,6 +824,30 @@ export default function Home() {
       "Explore the 18 chapters and 700 verses of Srimad Bhagavad Gita with full translations, slokas, and meanings in Kannada and English. Speak with Lord Krishna AI.",
       "Bhagavad Gita, Bhagavad Gita Kannada, Krishna AI chatbot, Arjuna, chapters, verses, student gita, devotee gita, yogi gita, leader gita"
     );
+    updateSchemaOrg({
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Srimad Bhagavad Gita AI",
+      "alternateName": "ಶ್ರೀಮದ್ ಭಗವದ್ಗೀತೆ",
+      "url": "https://gita.sanatana360.com",
+      "description": "Explore the 18 chapters and 700 verses of Srimad Bhagavad Gita with full translations and meanings in Kannada and English, alongside an interactive AI Krishna chatbot dialog.",
+      "applicationCategory": "EducationalApplication, SpiritualApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "creator": {
+        "@type": "Organization",
+        "name": "Sanatana 360",
+        "url": "https://gita.sanatana360.com"
+      },
+      "about": {
+        "@type": "CreativeWork",
+        "name": "Srimad Bhagavad Gita",
+        "author": {
+          "@type": "Person",
+          "name": "Lord Krishna"
+        }
+      }
+    });
   }, []);
 
   const paths = [

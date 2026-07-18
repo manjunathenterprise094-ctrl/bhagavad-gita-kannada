@@ -106,3 +106,19 @@ export function updateMetaTags(
   canonicalLink.setAttribute('href', currentUrl);
 }
 
+/**
+ * Helper utility to dynamically inject JSON-LD Structured Schema metadata
+ * which AI search engines (Gemini, SearchGPT, Perplexity) parse to understand page context
+ */
+export function updateSchemaOrg(schemaData: object) {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+  
+  let schemaScript = document.querySelector('script[type="application/ld+json"]');
+  if (!schemaScript) {
+    schemaScript = document.createElement('script');
+    schemaScript.setAttribute('type', 'application/ld+json');
+    document.head.appendChild(schemaScript);
+  }
+  schemaScript.textContent = JSON.stringify(schemaData);
+}
+

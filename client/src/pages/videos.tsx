@@ -106,6 +106,23 @@ export default function Videos() {
             />
           </div>
 
+          {/* Fallback button if player doesn't load */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-amber-500/10 border border-primary/20 rounded-2xl">
+            <div className="text-left font-sans">
+              <span className="text-[11px] font-bold text-foreground">Having trouble playing the video?</span>
+              <span className="block text-[10px] text-muted-foreground mt-0.5">ವೀಡಿಯೊ ಪ್ಲೇ ಆಗದಿದ್ದರೆ ಯೂಟ್ಯೂಬ್‌ನಲ್ಲಿ ನೇರವಾಗಿ ವೀಕ್ಷಿಸಿ.</span>
+            </div>
+            <a
+              href={`https://www.youtube.com/watch?v=${activeVideo.youtubeId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shrink-0 transition-all cursor-pointer shadow-md font-sans"
+            >
+              <Youtube className="h-4 w-4 fill-white" />
+              Watch on YouTube
+            </a>
+          </div>
+
           {/* Active Video Meta details */}
           <div className="p-6 rounded-3xl bg-card border border-border/50 shadow-md space-y-3">
             <div className="flex items-center gap-2">

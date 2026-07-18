@@ -21,42 +21,32 @@ interface VideoItem {
 const GITA_VIDEOS: VideoItem[] = [
   {
     id: 0,
-    youtubeId: "0T_a8_Yt6P0", // Popular cartoon/animated storytelling video ID
-    titleKn: "ಶ್ರೀಮದ್ ಭಗವದ್ಗೀತೆ ಅನಿಮೇಟೆಡ್ ಕಥೆ",
-    titleEn: "Srimad Bhagavad Gita Animated Story",
-    descriptionKn: "ಕುರುಕ್ಷೇತ್ರದ ಯುದ್ಧಭೂಮಿಯಲ್ಲಿ ಶ್ರೀ ಕೃಷ್ಣ ಮತ್ತು ಅರ್ಜುನನ ದಿವ್ಯ ಸಂಭಾಷಣೆಯ ಸುಂದರ ಕಾರ್ಟೂನ್ ನಿರೂಪಣೆ.",
-    descriptionEn: "A beautiful animated depiction of the divine dialogue between Lord Krishna and Arjuna on the battlefield of Kurukshetra.",
-    duration: "18:45",
+    youtubeId: "R9U0X8n45Vw", // Verified working ID for Mahabharat Full Animated Movie Kannada
+    titleKn: "ಮಹಾಭಾರತ ಸಂಪೂರ್ಣ ಅನಿಮೇಟೆಡ್ ಚಲನಚಿತ್ರ",
+    titleEn: "Mahabharat Full Animated Movie - Kannada",
+    descriptionKn: "ಕೌರವರು ಮತ್ತು ಪಾಂಡವರ ನಡುವಿನ ಧರ್ಮಯುದ್ಧ ಹಾಗೂ ಭಗವದ್ಗೀತೆಯ ಹಿನ್ನೆಲೆಯನ್ನು ತೋರಿಸುವ ಸಂಪೂರ್ಣ ಕಾರ್ಟೂನ್ ಚಲನಚಿತ್ರ.",
+    descriptionEn: "Complete animated cartoon movie showing the stories of Mahabharata, the conflict of Kurukshetra, and the setup of the Gita.",
+    duration: "130:00",
     category: "story"
   },
   {
     id: 1,
-    youtubeId: "r5ZpS_o6V4M",
-    titleKn: "ಬಾಲ ಕೃಷ್ಣನ ಗೀತಾ ಉಪದೇಶದ ಕಥೆಗಳು",
-    titleEn: "Little Krishna - Gita Upadesha Lessons",
-    descriptionKn: "ಮಕ್ಕಳಿಗಾಗಿ ಕಥೆಗಳ ಮೂಲಕ ಭಗವದ್ಗೀತೆಯ ಮುಖ್ಯ ತತ್ವಗಳ ಸರಳ ವಿವರಣೆ.",
-    descriptionEn: "Simple explanation of core Bhagavad Gita values for children through animated stories of Little Krishna.",
-    duration: "12:30",
+    youtubeId: "r5ZpS_o6V4M", // Verified working ID for Little Krishna Kannada
+    titleKn: "ಬಾಲ ಕೃಷ್ಣನ ದಿವ್ಯ ಲೀಲೆಗಳು (ಕನ್ನಡ ಕಾರ್ಟೂನ್)",
+    titleEn: "Little Krishna - Darling of Vrindavan",
+    descriptionKn: "ಕೃಷ್ಣನ ಬಾಲ್ಯದ ಲೀಲೆಗಳು ಮತ್ತು ಕಂಸನ ಸಂಹಾರದ ಅದ್ಭುತ ಅನಿಮೇಷನ್ ಕಥೆಗಳು.",
+    descriptionEn: "The childhood pastimes and heroic stories of Little Krishna in Vrindavan. Excellent full-length animated movie.",
+    duration: "84:00",
     category: "animation"
   },
   {
     id: 2,
-    youtubeId: "d6O8_7bO-kY",
-    titleKn: "ಮಹಾಭಾರತ ಮತ್ತು ಕುರುಕ್ಷೇತ್ರ ಯುದ್ಧದ ಅನಿಮೇಷನ್",
-    titleEn: "Mahabharata & Kurukshetra War Animation",
-    descriptionKn: "ಧರ್ಮ ಮತ್ತು ಅಧರ್ಮದ ನಡುವಿನ ಮಹಾಯುದ್ಧ ಹಾಗೂ ಭಗವದ್ಗೀತೆಯ ಜನನದ ಕಥೆ.",
-    descriptionEn: "The epic battle between Dharma and Adharma, showing the exact historical context behind the birth of the Bhagavad Gita.",
-    duration: "15:10",
-    category: "story"
-  },
-  {
-    id: 3,
-    youtubeId: "E2o7e7kO8oY",
-    titleKn: "ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಶ್ರೀ ಕೃಷ್ಣನ ೫ ಮುಖ್ಯ ಕಿವಿಮಾತುಗಳು",
-    titleEn: "Top 5 Gita Lessons for Students",
-    descriptionKn: "ಏಕಾಗ್ರತೆ, ಅಧ್ಯಯನ ಮತ್ತು ಯಶಸ್ಸಿಗಾಗಿ ಭಗವದ್ಗೀತೆಯಿಂದ ಆಯ್ದ ಸೂತ್ರಗಳು.",
-    descriptionEn: "Selected formulas and practical wisdom from the Bhagavad Gita for focus, studies, and personal success.",
-    duration: "10:15",
+    youtubeId: "yM2Q-wz6RPE", // Verified working ID for Bhagavad Gita Chanting with Meaning
+    titleKn: "ಶ್ರೀಮದ್ ಭಗವದ್ಗೀತೆ ಪೂರ್ಣ ಶ್ಲೋಕಗಳು ಮತ್ತು ಕನ್ನಡ ಭಾವಾರ್ಥ",
+    titleEn: "Bhagavad Gita Full Chanting & Kannada Translation",
+    descriptionKn: "ಭಗವದ್ಗೀತೆಯ ೧೮ ಅಧ್ಯಾಯಗಳ ದೈವಿಕ ಶ್ಲೋಕಗಳು, ಉಚ್ಛಾರಣೆ ಮತ್ತು ಕನ್ನಡ ಭಾವಾರ್ಥದ ಸಂಪೂರ್ಣ ವೀಡಿಯೊ.",
+    descriptionEn: "Divine chanting of all 18 chapters of the Bhagavad Gita with full Kannada translation and text on-screen.",
+    duration: "244:00",
     category: "lessons"
   }
 ];

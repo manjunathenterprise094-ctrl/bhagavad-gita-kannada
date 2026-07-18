@@ -81,23 +81,62 @@ export default function Storybook() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   const [activeSpeech, setActiveSpeech] = useState(false);
-  
+  const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const activeScene = GITA_SCENES[activeSceneIndex];
 
-  const speakText = (text: string, lang: "kn" | "en") => {
-    if (typeof window === "undefined" || !window.speechSynthesis) return;
-
-    if (activeSpeech) {
+  const stopAllNarration = () => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
-      setActiveSpeech(false);
-      if (audioRef.current) audioRef.current.volume = 0.25; // restore
+    }
+    if (voiceAudioRef.current) {
+      voiceAudioRef.current.pause();
+      voiceAudioRef.current = null;
+    }
+    setActiveSpeech(false);
+    if (audioRef.current) {
+      audioRef.current.volume = 0.25;
+    }
+  };
+
+  const handleVoiceNarration = (text: string, lang: "kn" | "en") => {
+    if (activeSpeech) {
+      stopAllNarration();
       return;
     }
 
+    const audioUrl = `/audio/storybook/scene_${activeScene.id + 1}.mp3`;
+    const audio = new Audio(audioUrl);
+    voiceAudioRef.current = audio;
+
+    audio.onerror = () => {
+      console.log("Pre-recorded voiceover not found, playing TTS...");
+      voiceAudioRef.current = null;
+      triggerSpeechSynthesis(text, lang);
+    };
+
+    audio.onended = () => {
+      setActiveSpeech(false);
+      voiceAudioRef.current = null;
+      if (audioRef.current) audioRef.current.volume = 0.25;
+    };
+
+    audio.onplay = () => {
+      setActiveSpeech(true);
+      if (audioRef.current) audioRef.current.volume = 0.05;
+    };
+
+    audio.play().catch((err) => {
+      console.warn("Direct audio play failed, using TTS:", err);
+      voiceAudioRef.current = null;
+      triggerSpeechSynthesis(text, lang);
+    });
+  };
+
+  const triggerSpeechSynthesis = (text: string, lang: "kn" | "en") => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
-    
-    // Clean text of punctuation details for speech synthesis
     const cleanText = text.replace(/[*#_~`[\]()]/g, "").trim();
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = lang === "kn" ? "kn-IN" : "en-US";
@@ -112,31 +151,24 @@ export default function Storybook() {
 
     utterance.pitch = 0.95;
     utterance.rate = 0.9;
-
-    // Duck background music volume
     if (audioRef.current) audioRef.current.volume = 0.05;
 
     utterance.onend = () => {
       setActiveSpeech(false);
-      if (audioRef.current) audioRef.current.volume = 0.25; // restore
+      if (audioRef.current) audioRef.current.volume = 0.25;
     };
 
     utterance.onerror = () => {
       setActiveSpeech(false);
-      if (audioRef.current) audioRef.current.volume = 0.25; // restore
+      if (audioRef.current) audioRef.current.volume = 0.25;
     };
 
     setActiveSpeech(true);
     window.speechSynthesis.speak(utterance);
   };
 
-  // Stop any active speech on scene navigation
   useEffect(() => {
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-    }
-    setActiveSpeech(false);
-    if (audioRef.current) audioRef.current.volume = 0.25;
+    stopAllNarration();
   }, [activeSceneIndex]);
 
   useEffect(() => {
@@ -408,7 +440,7 @@ export default function Storybook() {
 
               {/* Speak/Voice Narration Button */}
               <button
-                onClick={() => speakText(activeScene.kannadaText, "kn")}
+                onClick={() => handleVoiceNarration(activeScene.kannadaText, "kn")}
                 className={`p-2 rounded-full border transition-all cursor-pointer flex items-center justify-center ${
                   activeSpeech 
                     ? "bg-green-600 border-green-600 text-white animate-pulse" 

@@ -225,14 +225,10 @@ export default function Storybook() {
   };
 
   const handleSpeakerClick = () => {
-    if (isPlaying) {
-      setIsPlaying(false); // Stop sequence
+    if (activeSpeech) {
+      stopVoiceNarrationOnly();
     } else {
-      if (activeSpeech) {
-        stopVoiceNarrationOnly();
-      } else {
-        playActiveSceneNarration(activeSceneIndex);
-      }
+      playActiveSceneNarration(activeSceneIndex);
     }
   };
 
@@ -270,6 +266,8 @@ export default function Storybook() {
     } else {
       globalAudio.play().catch(err => console.log("Audio blocked:", err));
       setIsPlaying(true);
+      // Play initial narration inside user click context to bypass browser speech blocks
+      playActiveSceneNarration(activeSceneIndex);
     }
   };
 

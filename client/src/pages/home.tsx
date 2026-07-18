@@ -326,6 +326,7 @@ export function MobileNavDrawer({ isOpen, onClose }: MobileNavProps) {
     { href: "/bookmarks", label: "My Bookmarks", icon: Bookmark },
     { href: "/chat", label: "Ask Krishna", icon: Sparkles },
     { href: "/pravachana", label: "Listen Gita (Audio)", icon: Music },
+    { href: "/videos", label: "Gita Videos", icon: Play },
     { href: "/about", label: "About Gita", icon: Info },
   ];
 
@@ -870,6 +871,7 @@ export default function Home() {
             <Link href="/bookmarks" className="nav-link text-muted-foreground hover:text-primary">Bookmarks</Link>
             <Link href="/chat" className="nav-link text-muted-foreground hover:text-primary">Ask Krishna</Link>
             <Link href="/pravachana" className="nav-link text-muted-foreground hover:text-primary">Listen Gita</Link>
+            <Link href="/videos" className="nav-link text-muted-foreground hover:text-primary">Gita Videos</Link>
             <Link href="/about" className="nav-link text-muted-foreground hover:text-primary">About</Link>
           </nav>
 

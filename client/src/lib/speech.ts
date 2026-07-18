@@ -26,7 +26,7 @@ export function useSpeech() {
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = lang === "kn" ? "kn-IN" : "en-US";
 
-    // Select a premium, deep, and warm male voice suitable for Lord Krishna
+    // Select a premium Indian English (en-IN) voice for authentic Sanskrit pronunciation, falling back to general English
     const voices = window.speechSynthesis.getVoices();
     let matchedVoice = null;
     
@@ -35,15 +35,29 @@ export function useSpeech() {
         v.lang.toLowerCase().includes("kn") || v.lang.toLowerCase().includes("kannada")
       );
     } else {
-      // Prioritize deep/warm male voices and Indian English (for authentic Sanskrit pronunciations)
-      const voicePreferences = ["male", "david", "ravi", "google us male", "natural", "en-in", "en-us"];
-      for (const pref of voicePreferences) {
-        matchedVoice = voices.find(v => 
-          v.lang.toLowerCase().startsWith("en") && 
-          v.name.toLowerCase().includes(pref)
-        );
-        if (matchedVoice) break;
+      // 1. Try to find Indian English (en-IN) voices
+      const enInVoices = voices.filter(v => v.lang.toLowerCase().includes("en-in"));
+      if (enInVoices.length > 0) {
+        matchedVoice = enInVoices.find(v => 
+          v.name.toLowerCase().includes("ravi") || 
+          v.name.toLowerCase().includes("male") || 
+          v.name.toLowerCase().includes("heera")
+        ) || enInVoices[0];
       }
+      
+      // 2. Fallback to general warm/deep English voices if no Indian English voice is installed
+      if (!matchedVoice) {
+        const voicePreferences = ["male", "david", "google us male", "natural", "en-us"];
+        for (const pref of voicePreferences) {
+          matchedVoice = voices.find(v => 
+            v.lang.toLowerCase().startsWith("en") && 
+            v.name.toLowerCase().includes(pref)
+          );
+          if (matchedVoice) break;
+        }
+      }
+      
+      // 3. Absolute fallback
       if (!matchedVoice) {
         matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith("en"));
       }
@@ -53,8 +67,8 @@ export function useSpeech() {
       utterance.voice = matchedVoice;
     }
     
-    utterance.pitch = 0.88; // Lower pitch to sound deep, resonant, and divine
-    utterance.rate = 0.85;  // Slower, poised speed for a calm and comforting celestial tone
+    utterance.pitch = 0.90; // Balanced deep, resonant tone
+    utterance.rate = 0.84;  // Poised, divine flow
 
     utterance.onend = () => {
       setActiveTextId(null);

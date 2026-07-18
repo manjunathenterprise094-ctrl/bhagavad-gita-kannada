@@ -15,6 +15,8 @@ interface StoryScene {
   englishText: string;
   sceneName: string;
   iconType: string;
+  youtubeId: string;
+  startSeconds: number;
 }
 
 const GITA_SCENES: StoryScene[] = [
@@ -25,7 +27,9 @@ const GITA_SCENES: StoryScene[] = [
     kannadaText: "ಧರ್ಮಕ್ಷೇತ್ರವಾದ ಕುರುಕ್ಷೇತ್ರದಲ್ಲಿ ಪಾಂಡವರು ಮತ್ತು ಕೌರವರ ಸೈನ್ಯಗಳು ಮುಖಾಮುಖಿಯಾಗಿ ನಿಂತಿವೆ. ಯುದ್ಧ ಸನ್ನದ್ಧವಾಗಿದೆ.",
     englishText: "On the sacred field of Kurukshetra, the massive armies of the Pandavas and Kauravas stand face-to-face, ready for war.",
     sceneName: "battlefield",
-    iconType: "chariot"
+    iconType: "chariot",
+    youtubeId: "R9U0X8n45Vw",
+    startSeconds: 5260
   },
   {
     id: 1,
@@ -34,7 +38,9 @@ const GITA_SCENES: StoryScene[] = [
     kannadaText: "ದುಃಖದಿಂದ ವ್ಯಾಕುಲನಾದ ಅರ್ಜುನನು ತನ್ನ ಬಿಲ್ಲನ್ನು ಕೆಳಗಿಟ್ಟು, ರಥದಲ್ಲಿ ಕುಳಿತು ಶ್ರೀ ಕೃಷ್ಣನಿಗೆ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ಶರಣಾಗುತ್ತಾನೆ.",
     englishText: "Overwhelmed with grief and confusion, Arjuna drops his bow (Gandiva) and sits in the chariot, surrendering to Krishna for guidance.",
     sceneName: "despondency",
-    iconType: "bow"
+    iconType: "bow",
+    youtubeId: "R9U0X8n45Vw",
+    startSeconds: 5380
   },
   {
     id: 2,
@@ -43,7 +49,9 @@ const GITA_SCENES: StoryScene[] = [
     kannadaText: "ಶ್ರೀ ಕೃಷ್ಣನು ಆತ್ಮದ ಅಮರತ್ವವನ್ನು ಬೋಧಿಸುತ್ತಾನೆ. ಶಸ್ತ್ರಗಳು ಇದನ್ನು ಕತ್ತರಿಸಲಾರವು, ಬೆಂಕಿ ಇದನ್ನು ಸುಡಲಾರದು. ಆತ್ಮಕ್ಕೆ ಸಾವಿಲ್ಲ.",
     englishText: "Krishna teaches that the Soul (Atman) is eternal. Weapons cannot cut it, fire cannot burn it, water cannot wet it, nor wind dry it.",
     sceneName: "soul",
-    iconType: "spark"
+    iconType: "spark",
+    youtubeId: "R9U0X8n45Vw",
+    startSeconds: 5460
   },
   {
     id: 3,
@@ -52,7 +60,9 @@ const GITA_SCENES: StoryScene[] = [
     kannadaText: "ನಿಮ್ಮ ಕರ್ತವ್ಯದ ಮೇಲಷ್ಟೇ ನಿಮ್ಮ ಅಧಿಕಾರ, ಫಲಗಳ ಮೇಲಲ್ಲ. ಕರ್ಮಫಲದ ಆಸೆಯಿಲ್ಲದೆ ಕೆಲಸ ಮಾಡುವುದೇ ನಿಜವಾದ ಯೋಗ.",
     englishText: "You have a right to perform your prescribed duty, but you are not entitled to the fruits of your actions. Act without attachment.",
     sceneName: "karma",
-    iconType: "lotus"
+    iconType: "lotus",
+    youtubeId: "R9U0X8n45Vw",
+    startSeconds: 5580
   },
   {
     id: 4,
@@ -61,7 +71,9 @@ const GITA_SCENES: StoryScene[] = [
     kannadaText: "ಶ್ರೀ ಕೃಷ್ಣನು ಅರ್ಜುನನಿಗೆ ದಿವ್ಯದೃಷ್ಟಿ ನೀಡಿ, ಸಮಸ್ತ ಬ್ರಹ್ಮಾಂಡವನ್ನೊಳಗೊಂಡ ತನ್ನ ಅದ್ಭುತ ವಿಶ್ವರೂಪವನ್ನು ಪ್ರದರ್ಶಿಸುತ್ತಾನೆ.",
     englishText: "Lord Krishna grants Arjuna divine vision and reveals His breathtaking, infinite, multi-dimensional Cosmic Universal Form (Vishwarupa).",
     sceneName: "vishwarupa",
-    iconType: "universe"
+    iconType: "universe",
+    youtubeId: "R9U0X8n45Vw",
+    startSeconds: 5700
   },
   {
     id: 5,
@@ -70,7 +82,9 @@ const GITA_SCENES: StoryScene[] = [
     kannadaText: "ಎಲ್ಲಾ ಚಿಂತೆಗಳನ್ನು ಮರೆತು ನನ್ನೊಬ್ಬನಿಗೆ ಶರಣಾಗು. ನಾನು ನಿನ್ನನ್ನು ಎಲ್ಲಾ ಪಾಪಗಳಿಂದ ಮುಕ್ತಗೊಳಿಸುತ್ತೇನೆ, ದುಃಖಿಸಬೇಡ.",
     englishText: "Abandon all varieties of worries and surrender unto Me alone. I shall deliver you from all sinful reactions. Do not grieve.",
     sceneName: "surrender",
-    iconType: "feet"
+    iconType: "feet",
+    youtubeId: "R9U0X8n45Vw",
+    startSeconds: 5820
   }
 ];
 
@@ -79,6 +93,7 @@ export default function Storybook() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showVideoMode, setShowVideoMode] = useState(true);
   
   const [activeSpeech, setActiveSpeech] = useState(false);
   const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -267,117 +282,142 @@ export default function Storybook() {
         {/* Storybook Hero Visualizer */}
         <div className="relative aspect-video w-full rounded-3xl overflow-hidden border border-primary/45 shadow-2xl bg-gradient-to-b from-amber-950 via-slate-900 to-amber-950 p-6 flex flex-col justify-between select-none min-h-[320px]">
           
-          {/* Dynamic Animated Vector Graphics Background */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
-            <AnimatePresence mode="wait">
-              {activeScene.sceneName === "battlefield" && (
-                <motion.div
-                  key="battle"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 0.25, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.2 }}
-                  transition={{ duration: 1 }}
-                  className="w-full h-full flex items-center justify-center"
-                >
-                  {/* Chariot Silhouette SVG */}
-                  <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 fill-amber-500">
-                    <path d="M10,80 L90,80 L75,50 L25,50 Z" />
-                    <circle cx="35" cy="85" r="10" stroke="#f59e0b" strokeWidth="2" />
-                    <circle cx="65" cy="85" r="10" stroke="#f59e0b" strokeWidth="2" />
-                    <path d="M50,50 L50,15 L65,25 Z" fill="#ea580c" />
-                  </svg>
-                </motion.div>
-              )}
+          {showVideoMode ? (
+            <div className="absolute inset-0 w-full h-full bg-black z-0">
+              <iframe
+                src={`https://www.youtube.com/embed/${activeScene.youtubeId}?start=${activeScene.startSeconds}&autoplay=1&mute=1&rel=0&enablejsapi=1`}
+                title={activeScene.titleEn}
+                className="absolute inset-0 w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+              <div className="absolute inset-0 bg-black/40 pointer-events-none" /> {/* soft overlay to boost text contrast */}
+            </div>
+          ) : (
+            /* Dynamic Animated Vector Graphics Background */
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+              <AnimatePresence mode="wait">
+                {activeScene.sceneName === "battlefield" && (
+                  <motion.div
+                    key="battle"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 0.25, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.2 }}
+                    transition={{ duration: 1 }}
+                    className="w-full h-full flex items-center justify-center"
+                  >
+                    {/* Chariot Silhouette SVG */}
+                    <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 fill-amber-500">
+                      <path d="M10,80 L90,80 L75,50 L25,50 Z" />
+                      <circle cx="35" cy="85" r="10" stroke="#f59e0b" strokeWidth="2" />
+                      <circle cx="65" cy="85" r="10" stroke="#f59e0b" strokeWidth="2" />
+                      <path d="M50,50 L50,15 L65,25 Z" fill="#ea580c" />
+                    </svg>
+                  </motion.div>
+                )}
 
-              {activeScene.sceneName === "despondency" && (
-                <motion.div
-                  key="bow"
-                  initial={{ opacity: 0, rotate: -45 }}
-                  animate={{ opacity: 0.25, rotate: 12 }}
-                  exit={{ opacity: 0, y: 100 }}
-                  transition={{ duration: 1 }}
-                  className="w-full h-full flex items-center justify-center"
-                >
-                  {/* Bow (Gandiva) SVG */}
-                  <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 stroke-amber-400 fill-none" strokeWidth="3">
-                    <path d="M 30 10 C 60 10, 80 40, 80 50 C 80 60, 60 90, 30 90" />
-                    <line x1="30" y1="10" x2="30" y2="90" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
-                  </svg>
-                </motion.div>
-              )}
+                {activeScene.sceneName === "despondency" && (
+                  <motion.div
+                    key="bow"
+                    initial={{ opacity: 0, rotate: -45 }}
+                    animate={{ opacity: 0.25, rotate: 12 }}
+                    exit={{ opacity: 0, y: 100 }}
+                    transition={{ duration: 1 }}
+                    className="w-full h-full flex items-center justify-center"
+                  >
+                    {/* Bow (Gandiva) SVG */}
+                    <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 stroke-amber-400 fill-none" strokeWidth="3">
+                      <path d="M 30 10 C 60 10, 80 40, 80 50 C 80 60, 60 90, 30 90" />
+                      <line x1="30" y1="10" x2="30" y2="90" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+                    </svg>
+                  </motion.div>
+                )}
 
-              {activeScene.sceneName === "soul" && (
-                <motion.div
-                  key="soul"
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 0.3, scale: [1, 1.2, 1] }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                  className="w-full h-full flex items-center justify-center"
-                >
-                  {/* Glowing Spark Atman SVG */}
-                  <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 fill-amber-300">
-                    <path d="M50,10 Q60,40 90,50 Q60,60 50,90 Q40,60 10,50 Q40,40 50,10 Z" />
-                  </svg>
-                </motion.div>
-              )}
+                {activeScene.sceneName === "soul" && (
+                  <motion.div
+                    key="soul"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 0.3, scale: [1, 1.2, 1] }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                    className="w-full h-full flex items-center justify-center"
+                  >
+                    {/* Glowing Spark Atman SVG */}
+                    <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 fill-amber-300">
+                      <path d="M50,10 Q60,40 90,50 Q60,60 50,90 Q40,60 10,50 Q40,40 50,10 Z" />
+                    </svg>
+                  </motion.div>
+                )}
 
-              {activeScene.sceneName === "karma" && (
-                <motion.div
-                  key="lotus"
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 0.25, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ duration: 1 }}
-                  className="w-full h-full flex items-center justify-center"
-                >
-                  {/* Lotus SVG */}
-                  <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 fill-pink-500">
-                    <path d="M50,20 C60,40 90,60 50,90 C10,60 40,40 50,20 Z" />
-                    <path d="M50,40 C65,55 80,65 50,90 C20,65 35,55 50,40 Z" fill="#f43f5e" opacity="0.8" />
-                  </svg>
-                </motion.div>
-              )}
+                {activeScene.sceneName === "karma" && (
+                  <motion.div
+                    key="lotus"
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 0.25, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 1 }}
+                    className="w-full h-full flex items-center justify-center"
+                  >
+                    {/* Lotus SVG */}
+                    <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 fill-pink-500">
+                      <path d="M50,20 C60,40 90,60 50,90 C10,60 40,40 50,20 Z" />
+                      <path d="M50,40 C65,55 80,65 50,90 C20,65 35,55 50,40 Z" fill="#f43f5e" opacity="0.8" />
+                    </svg>
+                  </motion.div>
+                )}
 
-              {activeScene.sceneName === "vishwarupa" && (
-                <motion.div
-                  key="universe"
-                  initial={{ opacity: 0, rotate: 0 }}
-                  animate={{ opacity: 0.25, rotate: 360 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                  className="w-full h-full flex items-center justify-center"
-                >
-                  {/* Starry Galaxy swirl */}
-                  <svg viewBox="0 0 100 100" className="w-2/3 h-2/3 stroke-purple-400 fill-none" strokeWidth="1">
-                    <circle cx="50" cy="50" r="10" />
-                    <circle cx="50" cy="50" r="25" strokeDasharray="5 5" />
-                    <circle cx="50" cy="50" r="40" strokeDasharray="10 5" />
-                  </svg>
-                </motion.div>
-              )}
+                {activeScene.sceneName === "vishwarupa" && (
+                  <motion.div
+                    key="universe"
+                    initial={{ opacity: 0, rotate: 0 }}
+                    animate={{ opacity: 0.25, rotate: 360 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                    className="w-full h-full flex items-center justify-center"
+                  >
+                    {/* Starry Galaxy swirl */}
+                    <svg viewBox="0 0 100 100" className="w-2/3 h-2/3 stroke-purple-400 fill-none" strokeWidth="1">
+                      <circle cx="50" cy="50" r="10" />
+                      <circle cx="50" cy="50" r="25" strokeDasharray="5 5" />
+                      <circle cx="50" cy="50" r="40" strokeDasharray="10 5" />
+                    </svg>
+                  </motion.div>
+                )}
 
-              {activeScene.sceneName === "surrender" && (
-                <motion.div
-                  key="feet"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 0.3, scale: 1.05 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-                  className="w-full h-full flex items-center justify-center"
-                >
-                  {/* Lotus Feet / Surrender Om Watermark */}
-                  <div className="text-white text-[150px] font-serif font-bold">ॐ</div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                {activeScene.sceneName === "surrender" && (
+                  <motion.div
+                    key="feet"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 0.3, scale: 1.05 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+                    className="w-full h-full flex items-center justify-center"
+                  >
+                    {/* Lotus Feet / Surrender Om Watermark */}
+                    <div className="text-white text-[150px] font-serif font-bold">ॐ</div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
           {/* Top Panel: Control indicators */}
           <div className="relative z-10 flex items-center justify-between w-full">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full backdrop-blur-sm">
-              Gita Lesson {activeSceneIndex + 1} of {GITA_SCENES.length}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full backdrop-blur-sm">
+                Gita Lesson {activeSceneIndex + 1} of {GITA_SCENES.length}
+              </span>
+              
+              {/* Mode Switch Toggle Button */}
+              <button
+                onClick={() => setShowVideoMode(!showVideoMode)}
+                className="text-[10px] font-extrabold uppercase tracking-wider text-white bg-primary/80 hover:bg-primary border border-primary/40 px-2.5 py-1 rounded-full backdrop-blur-sm transition-all cursor-pointer flex items-center gap-1 shadow-md font-sans"
+                title="Switch between Cartoon Video and Devotional Art Mode"
+              >
+                {showVideoMode ? <Sparkles className="h-3 w-3" /> : <Film className="h-3 w-3" />}
+                {showVideoMode ? "View Art Mode" : "Play Video Mode"}
+              </button>
+            </div>
 
             {/* Live Play status indicator */}
             <div className="flex items-center gap-1.5">
@@ -397,7 +437,7 @@ export default function Storybook() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.5 }}
-                className="space-y-3"
+                className="space-y-3 bg-black/60 backdrop-blur-md border border-white/10 px-6 py-4 rounded-3xl max-w-2xl mx-auto shadow-xl"
               >
                 <div className="space-y-0.5">
                   <h3 className="text-lg md:text-xl font-bold text-gradient-gold">

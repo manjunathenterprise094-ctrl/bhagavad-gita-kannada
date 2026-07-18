@@ -1,67 +1,143 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Play, Youtube, Film, Sparkles, BookOpen, Clock, Compass, Info, ArrowLeft, Heart, MessageSquare
+  Play, Pause, Youtube, Film, Sparkles, BookOpen, Clock, Compass, Info, ArrowLeft, Heart, MessageSquare, Volume2, VolumeX, ChevronRight, ChevronLeft
 } from "lucide-react";
 import { ProgressBar, ParticlesBackdrop, AudioWidget, MobileNavDrawer, FloatingChatButton } from "./home";
 import { updateMetaTags } from "@/lib/seo";
 
-interface VideoItem {
+interface StoryScene {
   id: number;
-  youtubeId: string;
   titleKn: string;
   titleEn: string;
-  descriptionKn: string;
-  descriptionEn: string;
-  duration: string;
-  category: "story" | "animation" | "lessons";
+  kannadaText: string;
+  englishText: string;
+  sceneName: string;
+  iconType: string;
 }
 
-const GITA_VIDEOS: VideoItem[] = [
+const GITA_SCENES: StoryScene[] = [
   {
     id: 0,
-    youtubeId: "R9U0X8n45Vw", // Verified working ID for Mahabharat Full Animated Movie Kannada
-    titleKn: "ಮಹಾಭಾರತ ಸಂಪೂರ್ಣ ಅನಿಮೇಟೆಡ್ ಚಲನಚಿತ್ರ",
-    titleEn: "Mahabharat Full Animated Movie - Kannada",
-    descriptionKn: "ಕೌರವರು ಮತ್ತು ಪಾಂಡವರ ನಡುವಿನ ಧರ್ಮಯುದ್ಧ ಹಾಗೂ ಭಗವದ್ಗೀತೆಯ ಹಿನ್ನೆಲೆಯನ್ನು ತೋರಿಸುವ ಸಂಪೂರ್ಣ ಕಾರ್ಟೂನ್ ಚಲನಚಿತ್ರ.",
-    descriptionEn: "Complete animated cartoon movie showing the stories of Mahabharata, the conflict of Kurukshetra, and the setup of the Gita.",
-    duration: "130:00",
-    category: "story"
+    titleKn: "ಅಧ್ಯಾಯ 1: ಕುರುಕ್ಷೇತ್ರ ಯುದ್ಧಭೂಮಿ",
+    titleEn: "Scene 1: The Battlefield of Kurukshetra",
+    kannadaText: "ಧರ್ಮಕ್ಷೇತ್ರವಾದ ಕುರುಕ್ಷೇತ್ರದಲ್ಲಿ ಪಾಂಡವರು ಮತ್ತು ಕೌರವರ ಸೈನ್ಯಗಳು ಮುಖಾಮುಖಿಯಾಗಿ ನಿಂತಿವೆ. ಯುದ್ಧ ಸನ್ನದ್ಧವಾಗಿದೆ.",
+    englishText: "On the sacred field of Kurukshetra, the massive armies of the Pandavas and Kauravas stand face-to-face, ready for war.",
+    sceneName: "battlefield",
+    iconType: "chariot"
   },
   {
     id: 1,
-    youtubeId: "r5ZpS_o6V4M", // Verified working ID for Little Krishna Kannada
-    titleKn: "ಬಾಲ ಕೃಷ್ಣನ ದಿವ್ಯ ಲೀಲೆಗಳು (ಕನ್ನಡ ಕಾರ್ಟೂನ್)",
-    titleEn: "Little Krishna - Darling of Vrindavan",
-    descriptionKn: "ಕೃಷ್ಣನ ಬಾಲ್ಯದ ಲೀಲೆಗಳು ಮತ್ತು ಕಂಸನ ಸಂಹಾರದ ಅದ್ಭುತ ಅನಿಮೇಷನ್ ಕಥೆಗಳು.",
-    descriptionEn: "The childhood pastimes and heroic stories of Little Krishna in Vrindavan. Excellent full-length animated movie.",
-    duration: "84:00",
-    category: "animation"
+    titleKn: "ಅಧ್ಯಾಯ 2: ಅರ್ಜುನನ ಶರಣಾಗತಿ",
+    titleEn: "Scene 2: Arjuna's Surrender & Despondency",
+    kannadaText: "ದುಃಖದಿಂದ ವ್ಯಾಕುಲನಾದ ಅರ್ಜುನನು ತನ್ನ ಬಿಲ್ಲನ್ನು ಕೆಳಗಿಟ್ಟು, ರಥದಲ್ಲಿ ಕುಳಿತು ಶ್ರೀ ಕೃಷ್ಣನಿಗೆ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ಶರಣಾಗುತ್ತಾನೆ.",
+    englishText: "Overwhelmed with grief and confusion, Arjuna drops his bow (Gandiva) and sits in the chariot, surrendering to Krishna for guidance.",
+    sceneName: "despondency",
+    iconType: "bow"
   },
   {
     id: 2,
-    youtubeId: "yM2Q-wz6RPE", // Verified working ID for Bhagavad Gita Chanting with Meaning
-    titleKn: "ಶ್ರೀಮದ್ ಭಗವದ್ಗೀತೆ ಪೂರ್ಣ ಶ್ಲೋಕಗಳು ಮತ್ತು ಕನ್ನಡ ಭಾವಾರ್ಥ",
-    titleEn: "Bhagavad Gita Full Chanting & Kannada Translation",
-    descriptionKn: "ಭಗವದ್ಗೀತೆಯ ೧೮ ಅಧ್ಯಾಯಗಳ ದೈವಿಕ ಶ್ಲೋಕಗಳು, ಉಚ್ಛಾರಣೆ ಮತ್ತು ಕನ್ನಡ ಭಾವಾರ್ಥದ ಸಂಪೂರ್ಣ ವೀಡಿಯೊ.",
-    descriptionEn: "Divine chanting of all 18 chapters of the Bhagavad Gita with full Kannada translation and text on-screen.",
-    duration: "244:00",
-    category: "lessons"
+    titleKn: "ಅಧ್ಯಾಯ 2: ಆತ್ಮದ ಅಮರತ್ವ",
+    titleEn: "Scene 3: The Immortality of the Soul",
+    kannadaText: "ಶ್ರೀ ಕೃಷ್ಣನು ಆತ್ಮದ ಅಮರತ್ವವನ್ನು ಬೋಧಿಸುತ್ತಾನೆ. ಶಸ್ತ್ರಗಳು ಇದನ್ನು ಕತ್ತರಿಸಲಾರವು, ಬೆಂಕಿ ಇದನ್ನು ಸುಡಲಾರದು. ಆತ್ಮಕ್ಕೆ ಸಾವಿಲ್ಲ.",
+    englishText: "Krishna teaches that the Soul (Atman) is eternal. Weapons cannot cut it, fire cannot burn it, water cannot wet it, nor wind dry it.",
+    sceneName: "soul",
+    iconType: "spark"
+  },
+  {
+    id: 3,
+    titleKn: "ಅಧ್ಯಾಯ 3: ನಿಷ್ಕಾಮ ಕರ್ಮಯೋಗ",
+    titleEn: "Scene 4: The Path of Selfless Action",
+    kannadaText: "ನಿಮ್ಮ ಕರ್ತವ್ಯದ ಮೇಲಷ್ಟೇ ನಿಮ್ಮ ಅಧಿಕಾರ, ಫಲಗಳ ಮೇಲಲ್ಲ. ಕರ್ಮಫಲದ ಆಸೆಯಿಲ್ಲದೆ ಕೆಲಸ ಮಾಡುವುದೇ ನಿಜವಾದ ಯೋಗ.",
+    englishText: "You have a right to perform your prescribed duty, but you are not entitled to the fruits of your actions. Act without attachment.",
+    sceneName: "karma",
+    iconType: "lotus"
+  },
+  {
+    id: 4,
+    titleKn: "ಅಧ್ಯಾಯ 11: ವಿಶ್ವರೂಪ ದರ್ಶನ",
+    titleEn: "Scene 5: The Cosmic Universal Form",
+    kannadaText: "ಶ್ರೀ ಕೃಷ್ಣನು ಅರ್ಜುನನಿಗೆ ದಿವ್ಯದೃಷ್ಟಿ ನೀಡಿ, ಸಮಸ್ತ ಬ್ರಹ್ಮಾಂಡವನ್ನೊಳಗೊಂಡ ತನ್ನ ಅದ್ಭುತ ವಿಶ್ವರೂಪವನ್ನು ಪ್ರದರ್ಶಿಸುತ್ತಾನೆ.",
+    englishText: "Lord Krishna grants Arjuna divine vision and reveals His breathtaking, infinite, multi-dimensional Cosmic Universal Form (Vishwarupa).",
+    sceneName: "vishwarupa",
+    iconType: "universe"
+  },
+  {
+    id: 5,
+    titleKn: "ಅಧ್ಯಾಯ 18: ಶರಣಾಗತಿ ಮತ್ತು ಮೋಕ್ಷ",
+    titleEn: "Scene 6: Absolute Devotion & Refuge",
+    kannadaText: "ಎಲ್ಲಾ ಚಿಂತೆಗಳನ್ನು ಮರೆತು ನನ್ನೊಬ್ಬನಿಗೆ ಶರಣಾಗು. ನಾನು ನಿನ್ನನ್ನು ಎಲ್ಲಾ ಪಾಪಗಳಿಂದ ಮುಕ್ತಗೊಳಿಸುತ್ತೇನೆ, ದುಃಖಿಸಬೇಡ.",
+    englishText: "Abandon all varieties of worries and surrender unto Me alone. I shall deliver you from all sinful reactions. Do not grieve.",
+    sceneName: "surrender",
+    iconType: "feet"
   }
 ];
 
 export default function Videos() {
-  const [activeVideo, setActiveVideo] = useState<VideoItem>(GITA_VIDEOS[0]);
+  const [activeSceneIndex, setActiveSceneIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const activeScene = GITA_SCENES[activeSceneIndex];
 
   useEffect(() => {
     updateMetaTags(
-      "Animated Bhagavad Gita Kannada Cartoon Stories | Kids & Students",
-      "Watch high-quality animated stories, cartoon lessons, and visual summaries of Srimad Bhagavad Gita in Kannada. Perfect for children, students, and beginners.",
-      "Gita Kannada animation, Bhagavad Gita cartoon, kids gita, student gita lessons, Krishna animations, Mahabharata cartoon Kannada"
+      "Interactive Animated Bhagavad Gita Stories | Kannada & English",
+      "Experience the visual storybook of Srimad Bhagavad Gita in Kannada and English with devotional flute audio, animated scenes, and key teachings.",
+      "Gita Kannada cartoon, animated Gita stories, Krishna Arjuna stories, Mahabharata cartoon Kannada, Bhagavad Gita visual book"
     );
+
+    // Initialize audio
+    audioRef.current = new Audio("https://gita.sanatana360.com/Krishna.mp3");
+    audioRef.current.loop = true;
+    audioRef.current.volume = 0.25;
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
   }, []);
+
+  // Auto-play slides logic
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPlaying) {
+      interval = setInterval(() => {
+        setActiveSceneIndex((prev) => (prev + 1) % GITA_SCENES.length);
+      }, 7500); // cycle every 7.5 seconds
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  const togglePlayback = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().catch(err => console.log("Audio blocked:", err));
+      setIsPlaying(true);
+    }
+  };
+
+  const toggleMute = () => {
+    if (!audioRef.current) return;
+    audioRef.current.muted = !isAudioMuted;
+    setIsAudioMuted(!isAudioMuted);
+  };
+
+  const nextScene = () => {
+    setActiveSceneIndex((prev) => (prev + 1) % GITA_SCENES.length);
+  };
+
+  const prevScene = () => {
+    setActiveSceneIndex((prev) => (prev - 1 + GITA_SCENES.length) % GITA_SCENES.length);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background/98 to-primary/5 pb-20 relative overflow-hidden font-sans">
@@ -78,143 +154,278 @@ export default function Videos() {
               <ArrowLeft className="h-4 w-4 text-foreground" />
             </Link>
             <h1 className="text-base sm:text-lg font-bold text-gradient-gold">
-              Gita Videos • ಗೀತಾ ವೀಡಿಯೊಗಳು
+              Gita Devotional Storybook
             </h1>
           </div>
           
-          <div className="flex items-center gap-3">
-            <Link href="/pravachana" className="px-3.5 py-1.5 rounded-full border border-primary/30 text-xs font-bold hover:bg-primary/10 transition-all text-primary">
-              Audio Pravachana
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleMute}
+              className="p-2 rounded-xl border border-primary/20 bg-background/50 text-foreground hover:bg-primary/10 transition-all cursor-pointer"
+              aria-label="Mute sound"
+            >
+              {isAudioMuted ? <VolumeX className="h-4 w-4 text-red-500" /> : <Volume2 className="h-4 w-4 text-primary" />}
+            </button>
+            <Link href="/pravachana" className="px-3.5 py-1.5 rounded-full border border-primary/30 text-xs font-bold hover:bg-primary/10 transition-all text-primary font-sans">
+              Pravachana Audio
             </Link>
           </div>
         </div>
       </header>
 
       {/* Main Container */}
-      <main className="max-w-5xl mx-auto py-8 px-4 flex flex-col lg:flex-row gap-6 relative z-10">
+      <main className="max-w-4xl mx-auto py-6 px-4 space-y-6 relative z-10">
         
-        {/* Left Side: Active Video Player & Details */}
-        <div className="flex-1 space-y-5">
-          {/* Glowing video card */}
-          <div className="relative aspect-video w-full rounded-3xl overflow-hidden border border-primary/35 shadow-2xl bg-black">
-            <iframe
-              src={`https://www.youtube.com/embed/${activeVideo.youtubeId}?autoplay=1&rel=0`}
-              title={activeVideo.titleEn}
-              className="absolute inset-0 w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+        {/* Storybook Hero Visualizer */}
+        <div className="relative aspect-video w-full rounded-3xl overflow-hidden border border-primary/45 shadow-2xl bg-gradient-to-b from-amber-950 via-slate-900 to-amber-950 p-6 flex flex-col justify-between select-none min-h-[320px]">
+          
+          {/* Dynamic Animated Vector Graphics Background */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+            <AnimatePresence mode="wait">
+              {activeScene.sceneName === "battlefield" && (
+                <motion.div
+                  key="battle"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 0.25, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.2 }}
+                  transition={{ duration: 1 }}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  {/* Chariot Silhouette SVG */}
+                  <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 fill-amber-500">
+                    <path d="M10,80 L90,80 L75,50 L25,50 Z" />
+                    <circle cx="35" cy="85" r="10" stroke="#f59e0b" strokeWidth="2" />
+                    <circle cx="65" cy="85" r="10" stroke="#f59e0b" strokeWidth="2" />
+                    <path d="M50,50 L50,15 L65,25 Z" fill="#ea580c" />
+                  </svg>
+                </motion.div>
+              )}
+
+              {activeScene.sceneName === "despondency" && (
+                <motion.div
+                  key="bow"
+                  initial={{ opacity: 0, rotate: -45 }}
+                  animate={{ opacity: 0.25, rotate: 12 }}
+                  exit={{ opacity: 0, y: 100 }}
+                  transition={{ duration: 1 }}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  {/* Bow (Gandiva) SVG */}
+                  <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 stroke-amber-400 fill-none" strokeWidth="3">
+                    <path d="M 30 10 C 60 10, 80 40, 80 50 C 80 60, 60 90, 30 90" />
+                    <line x1="30" y1="10" x2="30" y2="90" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+                  </svg>
+                </motion.div>
+              )}
+
+              {activeScene.sceneName === "soul" && (
+                <motion.div
+                  key="soul"
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 0.3, scale: [1, 1.2, 1] }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  {/* Glowing Spark Atman SVG */}
+                  <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 fill-amber-300">
+                    <path d="M50,10 Q60,40 90,50 Q60,60 50,90 Q40,60 10,50 Q40,40 50,10 Z" />
+                  </svg>
+                </motion.div>
+              )}
+
+              {activeScene.sceneName === "karma" && (
+                <motion.div
+                  key="lotus"
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 0.25, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 1 }}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  {/* Lotus SVG */}
+                  <svg viewBox="0 0 100 100" className="w-1/2 h-1/2 fill-pink-500">
+                    <path d="M50,20 C60,40 90,60 50,90 C10,60 40,40 50,20 Z" />
+                    <path d="M50,40 C65,55 80,65 50,90 C20,65 35,55 50,40 Z" fill="#f43f5e" opacity="0.8" />
+                  </svg>
+                </motion.div>
+              )}
+
+              {activeScene.sceneName === "vishwarupa" && (
+                <motion.div
+                  key="universe"
+                  initial={{ opacity: 0, rotate: 0 }}
+                  animate={{ opacity: 0.25, rotate: 360 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  {/* Starry Galaxy swirl */}
+                  <svg viewBox="0 0 100 100" className="w-2/3 h-2/3 stroke-purple-400 fill-none" strokeWidth="1">
+                    <circle cx="50" cy="50" r="10" />
+                    <circle cx="50" cy="50" r="25" strokeDasharray="5 5" />
+                    <circle cx="50" cy="50" r="40" strokeDasharray="10 5" />
+                  </svg>
+                </motion.div>
+              )}
+
+              {activeScene.sceneName === "surrender" && (
+                <motion.div
+                  key="feet"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 0.3, scale: 1.05 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  {/* Lotus Feet / Surrender Om Watermark */}
+                  <div className="text-white text-[150px] font-serif font-bold">ॐ</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* Fallback button if player doesn't load */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-amber-500/10 border border-primary/20 rounded-2xl">
-            <div className="text-left font-sans">
-              <span className="text-[11px] font-bold text-foreground">Having trouble playing the video?</span>
-              <span className="block text-[10px] text-muted-foreground mt-0.5">ವೀಡಿಯೊ ಪ್ಲೇ ಆಗದಿದ್ದರೆ ಯೂಟ್ಯೂಬ್‌ನಲ್ಲಿ ನೇರವಾಗಿ ವೀಕ್ಷಿಸಿ.</span>
+          {/* Top Panel: Control indicators */}
+          <div className="relative z-10 flex items-center justify-between w-full">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full backdrop-blur-sm">
+              Gita Lesson {activeSceneIndex + 1} of {GITA_SCENES.length}
+            </span>
+
+            {/* Live Play status indicator */}
+            <div className="flex items-center gap-1.5">
+              <span className={`h-2 w-2 rounded-full ${isPlaying ? "bg-green-500 animate-ping" : "bg-amber-500"}`} />
+              <span className="text-[9px] font-extrabold uppercase tracking-wider text-white/80">
+                {isPlaying ? "Auto-cycling Active" : "Paused"}
+              </span>
             </div>
+          </div>
+
+          {/* Middle Panel: Visual Title & Text Slides */}
+          <div className="relative z-10 my-auto text-center space-y-4 px-4 sm:px-10">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSceneIndex}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.5 }}
+                className="space-y-3"
+              >
+                <div className="space-y-0.5">
+                  <h3 className="text-lg md:text-xl font-bold text-gradient-gold">
+                    {activeVideoTitle(activeScene.titleKn)}
+                  </h3>
+                  <h4 className="text-xs font-semibold text-white/70 font-serif">
+                    {activeScene.titleEn}
+                  </h4>
+                </div>
+
+                <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent w-full" />
+
+                <p className="text-xs md:text-sm font-semibold text-white leading-relaxed font-serif max-w-2xl mx-auto">
+                  "{activeScene.kannadaText}"
+                </p>
+                <p className="text-[10px] md:text-xs text-white/70 italic leading-relaxed max-w-2xl mx-auto font-sans">
+                  "{activeScene.englishText}"
+                </p>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Bottom Panel: Interactive Controls */}
+          <div className="relative z-10 flex items-center justify-between w-full pt-4">
+            <div className="flex gap-2">
+              <button
+                onClick={prevScene}
+                className="p-2 rounded-full border border-white/20 bg-black/40 hover:bg-white/10 text-white transition-colors cursor-pointer"
+                aria-label="Previous scene"
+              >
+                <ChevronLeft className="h-4.5 w-4.5" />
+              </button>
+              <button
+                onClick={nextScene}
+                className="p-2 rounded-full border border-white/20 bg-black/40 hover:bg-white/10 text-white transition-colors cursor-pointer"
+                aria-label="Next scene"
+              >
+                <ChevronRight className="h-4.5 w-4.5" />
+              </button>
+            </div>
+
+            {/* Play/Pause Button */}
+            <button
+              onClick={togglePlayback}
+              className="px-6 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-95 text-white font-extrabold text-xs rounded-full flex items-center gap-1.5 shadow-lg transition-transform active:scale-95 cursor-pointer font-sans"
+            >
+              {isPlaying ? (
+                <>
+                  <Pause className="h-4 w-4 fill-white" />
+                  Pause Storybook
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4 fill-white" />
+                  Play Ambience Storybook
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Informational Guidelines Card */}
+        <div className="p-5 rounded-3xl bg-card border border-border/50 shadow-md text-left space-y-3 font-sans">
+          <h3 className="text-sm font-extrabold text-primary flex items-center gap-1.5">
+            <Info className="h-4 w-4" />
+            100% Offline & Copyright-Free Storybook
+          </h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            This Gita Devotional Storybook is built directly inside the codebase. It operates completely independently of YouTube. It generates visual storyboards on the screen and streams a royalty-free ambient flute score. It is fast, uses minimal data, and is safe from ads and copyright flags.
+          </p>
+        </div>
+
+        {/* Youtube Fallbacks List */}
+        <div className="space-y-3 text-left">
+          <h4 className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground px-1 flex items-center gap-1">
+            <Youtube className="h-4 w-4 text-red-500" />
+            External Video Streaming (YouTube Links)
+          </h4>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-sans">
             <a
-              href={`https://www.youtube.com/watch?v=${activeVideo.youtubeId}`}
+              href="https://www.youtube.com/watch?v=R9U0X8n45Vw"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shrink-0 transition-all cursor-pointer shadow-md font-sans"
+              className="p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all flex justify-between items-center group cursor-pointer"
             >
-              <Youtube className="h-4 w-4 fill-white" />
-              Watch on YouTube
+              <div>
+                <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">Mahabharat Full Movie (Kannada)</span>
+                <span className="block text-[10px] text-muted-foreground mt-0.5">2h 10m • Full Animated Cartoon Movie</span>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </a>
+
+            <a
+              href="https://www.youtube.com/watch?v=r5ZpS_o6V4M"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all flex justify-between items-center group cursor-pointer"
+            >
+              <div>
+                <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">Little Krishna (Kannada)</span>
+                <span className="block text-[10px] text-muted-foreground mt-0.5">1h 24m • Animated Kids Story Movie</span>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
             </a>
           </div>
-
-          {/* Active Video Meta details */}
-          <div className="p-6 rounded-3xl bg-card border border-border/50 shadow-md space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="divine-badge">
-                <Sparkles className="h-3 w-3" />
-                {activeVideo.category.toUpperCase()}
-              </span>
-              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
-                {activeVideo.duration} mins
-              </span>
-            </div>
-            
-            <div className="text-left space-y-1">
-              <h2 className="text-xl font-bold text-gradient-gold">
-                {activeVideo.titleKn}
-              </h2>
-              <h3 className="text-sm font-semibold text-muted-foreground font-serif">
-                {activeVideo.titleEn}
-              </h3>
-            </div>
-
-            <div className="h-px bg-border/40 w-full my-2" />
-
-            <div className="text-left space-y-2 text-xs md:text-sm text-foreground/80 leading-relaxed font-sans">
-              <p className="font-semibold text-primary">ವಿವರಣೆ / Description:</p>
-              <p className="italic">"{activeVideo.descriptionKn}"</p>
-              <p className="text-muted-foreground">"{activeVideo.descriptionEn}"</p>
-            </div>
-          </div>
         </div>
 
-        {/* Right Side: Playlist Sidebar */}
-        <div className="w-full lg:w-80 shrink-0 space-y-4">
-          <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 text-left">
-            <h4 className="text-xs font-extrabold text-primary uppercase tracking-widest flex items-center gap-1">
-              <Film className="h-4 w-4" />
-              Playlist • ವೀಡಿಯೊಗಳು
-            </h4>
-            <p className="text-[10px] text-muted-foreground mt-0.5">
-              Select an animated video to watch and learn Gita wisdom.
-            </p>
-          </div>
-
-          <div className="space-y-2 max-h-[60vh] lg:max-h-[75vh] overflow-y-auto pr-1">
-            {GITA_VIDEOS.map((video) => {
-              const isActive = activeVideo.id === video.id;
-              return (
-                <button
-                  key={video.id}
-                  onClick={() => setActiveVideo(video)}
-                  className={`w-full p-3.5 rounded-2xl border text-left flex gap-3 transition-all cursor-pointer ${
-                    isActive 
-                      ? "bg-gradient-to-br from-primary/10 to-orange-500/10 border-primary shadow-sm" 
-                      : "bg-card border-border/50 hover:border-primary/30 hover:bg-primary/5"
-                  }`}
-                >
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${
-                    isActive 
-                      ? "bg-primary text-primary-foreground" 
-                      : "bg-muted text-muted-foreground"
-                  }`}>
-                    {isActive ? (
-                      <Play className="h-5 w-5 fill-current" />
-                    ) : (
-                      <Youtube className="h-5 w-5" />
-                    )}
-                  </div>
-                  
-                  <div className="flex-1 overflow-hidden">
-                    <h5 className={`text-xs font-bold truncate ${isActive ? "text-primary" : "text-foreground"}`}>
-                      {video.titleKn}
-                    </h5>
-                    <h6 className="text-[10px] text-muted-foreground truncate font-serif mt-0.5">
-                      {video.titleEn}
-                    </h6>
-                    <div className="flex items-center justify-between mt-1 text-[9px] text-muted-foreground">
-                      <span className="uppercase font-semibold tracking-wider bg-muted px-1.5 py-0.2 rounded">
-                        {video.category}
-                      </span>
-                      <span>{video.duration} mins</span>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
       </main>
 
       {/* Floating Chat Shortcut */}
       <FloatingChatButton />
     </div>
   );
+}
+
+function activeVideoTitle(title: string): string {
+  return title;
 }

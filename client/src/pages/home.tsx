@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { 
   BookOpen, Search, X, Volume2, VolumeX, Menu, Compass, BookOpenCheck, 
   Info, Bookmark, ArrowRight, Sparkles, GraduationCap, Heart, Flame, Crown, Globe,
-  MessageSquareMore, Music, Play
+  MessageSquareMore, Music, Play, Frown, Trophy, Smile, AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { updateMetaTags } from "@/lib/seo";
 import { useSpeech } from "@/lib/speech";
+import { getSadhanaStats, type SadhanaStats } from "@/lib/sadhana";
 
 // Global Audio Singleton for continuous playback across pages
 let globalAudio: HTMLAudioElement | null = null;
@@ -626,6 +627,73 @@ function SearchSection() {
   );
 }
 
+const EMOTIONS = [
+  { id: "stress", labelKn: "ಒತ್ತಡ / ಆತಂಕ", labelEn: "Stress / Anxiety", icon: AlertCircle, color: "from-blue-500/10 to-indigo-500/10 border-blue-500/30" },
+  { id: "anger", labelKn: "ಕೋಪ / ಕ್ರೋಧ", labelEn: "Anger / Frustration", icon: Flame, color: "from-red-500/10 to-orange-500/10 border-red-500/30" },
+  { id: "fear", labelKn: "ಭಯ / ಆತಂಕ", labelEn: "Fear / Worry", icon: Bookmark, color: "from-purple-500/10 to-pink-500/10 border-purple-500/30" },
+  { id: "confusion", labelKn: "ಗೊಂದಲ", labelEn: "Confusion / Doubt", icon: Compass, color: "from-yellow-500/10 to-amber-500/10 border-yellow-500/30" },
+  { id: "grief", labelKn: "ದುಃಖ / ಶೋಕ", labelEn: "Grief / Sorrow", icon: Frown, color: "from-teal-500/10 to-emerald-500/10 border-teal-500/30" },
+];
+
+const EMOTION_REMEDIES: Record<string, {
+  titleKn: string;
+  titleEn: string;
+  krishnaAdviceKn: string;
+  krishnaAdviceEn: string;
+  verses: { chapter: number; verse: number; desc: string; descKn: string }[];
+}> = {
+  stress: {
+    titleKn: "ಒತ್ತಡ ಮತ್ತು ಆತಂಕಕ್ಕಿರುವ ಪರಿಹಾರ",
+    titleEn: "Remedy for Stress & Anxiety",
+    krishnaAdviceKn: "ಓ ಸತ್ಯಾನ್ವೇಷಕನೇ, ಫಲಿತಾಂಶಗಳ ಬಗ್ಗೆ ಚಿಂತಿಸದೆ ಕರ್ತವ್ಯದ ಮೇಲೆ ಗಮನ ಹರಿಸಿ. ನಿಮ್ಮ ಚಿಂತೆಗಳನ್ನು ಕೃಷ್ಣನಿಗೆ ಅರ್ಪಿಸಿ ಮತ್ತು ಶಾಂತಿಯನ್ನು ಪಡೆದುಕೊಳ್ಳಿ.",
+    krishnaAdviceEn: "O seeker of truth, focus on your duties, not the fruits. Detach from outcomes, surrender your worries to Me, and find absolute inner peace.",
+    verses: [
+      { chapter: 2, verse: 47, desc: "Action without concern for results.", descKn: "ಕರ್ಮದ ಮೇಲಷ್ಟೇ ನಿನ್ನ ಅಧಿಕಾರ, ಫಲಗಳ ಮೇಲಲ್ಲ." },
+      { chapter: 18, verse: 66, desc: "Absolute surrender to the Divine.", descKn: "ಎಲ್ಲಾ ಧರ್ಮಗಳನ್ನು ತೊರೆದು ನನ್ನೊಬ್ಬನಿಗೆ ಶರಣಾಗು." }
+    ]
+  },
+  anger: {
+    titleKn: "ಕೋಪ ಮತ್ತು ಅಶಾಂತಿಗಿರುವ ಪರಿಹಾರ",
+    titleEn: "Remedy for Anger & Frustration",
+    krishnaAdviceKn: "ಕೋಪವು ಅತಿಯಾದ ಆಸಕ್ತಿ ಮತ್ತು ನೆರವೇರದ ಆಸೆಗಳಿಂದ ಹುಟ್ಟುತ್ತದೆ. ಇದರಿಂದ ಬುದ್ಧಿಶಕ್ತಿ ನಾಶವಾಗುತ್ತದೆ. ಆಸೆಗಳನ್ನು ನಿಯಂತ್ರಿಸುವುದೇ ಕೋಪವನ್ನು ಗೆಲ್ಲುವ ಮಾರ್ಗ.",
+    krishnaAdviceEn: "Anger arises from attachment and unfulfilled desire. It clouds discrimination, leading to loss of memory and ruin of intellect. Control desires to conquer anger.",
+    verses: [
+      { chapter: 2, verse: 62, desc: "Attachment breeds desire, desire breeds anger.", descKn: "ವಿಷಯಗಳ ಚಿಂತನೆಯಿಂದ ಅತಿಯಾದ ಆಸಕ್ತಿ, ಆಸಕ್ತಿಯಿಂದ ಕೋಪ ಹುಟ್ಟುತ್ತದೆ." },
+      { chapter: 2, verse: 63, desc: "Anger leads to delusion and destruction.", descKn: "ಕೋಪದಿಂದ ಗೊಂದಲ, ಗೊಂದಲದಿಂದ ಬುದ್ಧಿನಾಶ, ಕೊನೆಗೆ ಮನುಷ್ಯನ ಸರ್ವನಾಶ." }
+    ]
+  },
+  fear: {
+    titleKn: "ಭಯ ನಿವಾರಣೆಗೆ ಪರಿಹಾರ",
+    titleEn: "Remedy for Overcoming Fear",
+    krishnaAdviceKn: "ಭಯವು ಅಜ್ಞಾನದಿಂದ ಹುಟ್ಟುವ ಭ್ರಮೆಯಾಗಿದೆ. ನಿಮ್ಮ ಆತ್ಮವು ಅಮರ ಹಾಗೂ ಅಳಿಸಲಾಗದ್ದು ಎಂಬುದನ್ನು ಅರಿತುಕೊಳ್ಳಿ. ಭಯವಿಲ್ಲದೆ ನಿಮ್ಮ ಕರ್ತವ್ಯವನ್ನು ಮಾಡಿ.",
+    krishnaAdviceEn: "Fear is an illusion born of ignorance. Recognize that your true self (Atman) is eternal, indestructible, and divine. Stand firm in your duty without fear.",
+    verses: [
+      { chapter: 4, verse: 10, desc: "Freedom from attachment, fear, and anger.", descKn: "ರಾಗ, ಭಯ, ಕ್ರೋಧಗಳಿಂದ ಮುಕ್ತರಾದವರು ನನ್ನನ್ನು ಸೇರುತ್ತಾರೆ." },
+      { chapter: 18, verse: 30, desc: "Understanding what is to be feared and what is not.", descKn: "ಯಾವುದಕ್ಕೆ ಹೆದರಬೇಕು ಮತ್ತು ಯಾವುದಕ್ಕೆ ಹೆದರಬಾರದು ಎಂದು ತಿಳಿಯುವುದೇ ಸಾತ್ವಿಕ ಬುದ್ಧಿ." }
+    ]
+  },
+  confusion: {
+    titleKn: "ಗೊಂದಲ ಮತ್ತು ಅನಿಶ್ಚಿತತೆಗೆ ಪರಿಹಾರ",
+    titleEn: "Remedy for Confusion & Doubt",
+    krishnaAdviceKn: "ನಿಮ್ಮ ಮನಸ್ಸು ಗೊಂದಲದಲ್ಲಿದ್ದಾಗ, ನಿಷ್ಕಾಮ ಕರ್ಮದ ಮೂಲಕ ಸತ್ಯವನ್ನು ಹುಡುಕಿ. ಪರಮಾತ್ಮನಲ್ಲಿ ಶರಣಾಗುವುದರಿಂದ ಮಾತ್ರ ನಿಜವಾದ ಮಾರ್ಗ ಗೋಚರಿಸುತ್ತದೆ.",
+    krishnaAdviceEn: "When your mind is bewildered by conflicting opinions, seek shelter in true spiritual wisdom. Perform your duty selflessly and clear all doubts.",
+    verses: [
+      { chapter: 2, verse: 7, desc: "Arjuna's surrender for guidance.", descKn: "ಗೊಂದಲಕ್ಕೊಳಗಾದ ನಾನು ನಿನಗೆ ಶರಣಾಗುತ್ತಿದ್ದೇನೆ, ನನಗೆ ಯಾವುದು ಒಳಿತೋ ಅದನ್ನು ಬೋಧಿಸು." },
+      { chapter: 3, verse: 2, desc: "Resolving confusing choices.", descKn: "ವ್ಯಾಕುಲಗೊಳಿಸುವ ಮಾತುಗಳಿಂದ ಗೊಂದಲಕ್ಕೊಳಗಾದ ನನ್ನ ಬುದ್ಧಿಯನ್ನು ಸರಿಪಡಿಸು." }
+    ]
+  },
+  grief: {
+    titleKn: "ದುಃಖ ಮತ್ತು ಶೋಕ ನಿವಾರಣೆಗೆ ಪರಿಹಾರ",
+    titleEn: "Remedy for Grief & Sorrow",
+    krishnaAdviceKn: "ಆತ್ಮವು ನಿತ್ಯವಾದದ್ದು, ಅದು ಎಂದೂ ಹುಟ್ಟುವುದಿಲ್ಲ ಮತ್ತು ಸಾಯುವುದಿಲ್ಲ. ಅಶಾಶ್ವತವಾದ ದೇಹಕ್ಕಾಗಿ ದುಃಖಿಸಬೇಡಿ. ಸತ್ಯದ ಬೆಳಕಿನಲ್ಲಿ ಆನಂದವನ್ನು ಕಂಡುಕೊಳ್ಳಿ.",
+    krishnaAdviceEn: "The soul is eternal; it is neither born nor does it ever die. Grieve not for the physical body, which is transient. Find solace in the eternal spiritual truth.",
+    verses: [
+      { chapter: 2, verse: 11, desc: "The wise do not grieve for the living or dead.", descKn: "ಜ್ಞಾನಿಗಳು ಬದುಕಿರುವವರಿಗಾಗಲೀ ಅಥವಾ ಮೃತರಾದವರಿಗಾಗಲೀ ಶೋಕಿಸುವುದಿಲ್ಲ." },
+      { chapter: 2, verse: 27, desc: "Death is certain for the born.", descKn: "ಹುಟ್ಟಿದವನಿಗೆ ಸಾವು ನಿಶ್ಚಿತ, ಸತ್ತವನಿಗೆ ಮರುಹುಟ್ಟು ನಿಶ್ಚಿತ. ಇದಕ್ಕಾಗಿ ಶೋಕಿಸಬೇಡ." }
+    ]
+  }
+};
+
 // Main Home Page Component
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -636,6 +704,14 @@ export default function Home() {
   const [quizStep, setQuizStep] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const { activeTextId, speak, stop } = useSpeech();
+  
+  // Sadhana & Emotional Remedies State
+  const [sadhana, setSadhana] = useState<SadhanaStats>({ streakCount: 0, lastReadDate: null, completedVerses: [] });
+  const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSadhana(getSadhanaStats());
+  }, []);
 
   const getKrishnaGuidance = () => {
     setIsRolling(true);
@@ -961,8 +1037,107 @@ export default function Home() {
               </div>
             </div>
           </Link>
+        {/* Sadhana & Reading Streak Tracker Widget */}
+        <motion.div
+          className="max-w-2xl mx-auto px-4 mt-6 mb-6"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.85 }}
+        >
+          <div className="rounded-3xl bg-card border border-primary/20 p-5 shadow-xl backdrop-blur-md text-left relative overflow-hidden">
+            {/* Saffron background glow */}
+            <div className="absolute -right-24 -bottom-24 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
+                  <Flame className={`h-5.5 w-5.5 text-white ${sadhana.streakCount > 0 ? "animate-bounce" : ""}`} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-foreground leading-tight">Daily Reading Sadhana</h4>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-xs text-muted-foreground font-sans">Current Streak:</span>
+                    <span className="text-xs font-extrabold text-orange-500 font-sans flex items-center gap-0.5">
+                      {sadhana.streakCount} Days {sadhana.streakCount > 0 ? "🔥" : "🌱"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress Detail */}
+              <div className="w-full sm:w-auto shrink-0 flex flex-col sm:items-end gap-1 font-sans">
+                <div className="flex justify-between sm:justify-start items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Rank:</span>
+                  <span className="text-xs font-bold text-primary inline-flex items-center gap-1">
+                    <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                    {sadhana.completedVerses.length >= 100 
+                      ? "Yogi • ಯೋಗಿ 🧘" 
+                      : sadhana.completedVerses.length >= 20 
+                      ? "Disciple • ಶಿಷ್ಯ 📖" 
+                      : sadhana.completedVerses.length >= 1 
+                      ? "Seeker • ಜಿಜ್ಞಾಸು 🪔" 
+                      : "Beginner • ಆರಂಭಿಕ 🌱"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="w-full sm:w-28 bg-muted h-2 rounded-full overflow-hidden">
+                    <div 
+                      className="bg-gradient-to-r from-amber-500 to-orange-500 h-full rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(100, Math.max(0, (sadhana.completedVerses.length / 700) * 100))}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-bold text-foreground whitespace-nowrap leading-none">
+                    {sadhana.completedVerses.length}/700 Verses
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </motion.div>
-      </section>
+
+        {/* Gita Remedies Emotional Grid */}
+        <motion.div
+          className="max-w-2xl mx-auto px-4 mt-6 mb-2"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9 }}
+        >
+          <div className="text-center mb-5">
+            <h3 className="text-lg font-bold text-foreground font-serif inline-flex items-center gap-1.5">
+              <Compass className="h-4.5 w-4.5 text-primary" />
+              Gita Remedies • ಗೀತಾ ಪರಿಹಾರಗಳು
+            </h3>
+            <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5">
+              What emotional challenge are you facing? Tap to receive Lord Krishna's guidance.
+            </p>
+            <span className="block text-[10px] text-muted-foreground italic mt-0.5">
+              ನಿಮಗಾಗುತ್ತಿರುವ ಅನುಭವವೇನು? ಶ್ರೀ ಕೃಷ್ಣನ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ಕ್ಲಿಕ್ ಮಾಡಿ.
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+            {EMOTIONS.map(emotion => {
+              const Icon = emotion.icon;
+              return (
+                <button
+                  key={emotion.id}
+                  onClick={() => setSelectedEmotion(emotion.id)}
+                  className={`p-3.5 rounded-2xl bg-gradient-to-br ${emotion.color} border hover:border-primary/50 hover:scale-105 active:scale-95 transition-all shadow-sm flex flex-col items-center justify-center text-center cursor-pointer min-h-24`}
+                >
+                  <Icon className="h-5 w-5 text-primary mb-2 shrink-0" />
+                  <span className="text-[10px] font-bold text-foreground leading-tight tracking-tight">
+                    {emotion.labelEn}
+                  </span>
+                  <span className="text-[9px] text-muted-foreground font-semibold leading-none mt-1">
+                    {emotion.labelKn}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+      </motion.div>
+    </section>
 
       {/* Dynamic Search */}
       <SearchSection />
@@ -1464,6 +1639,103 @@ export default function Home() {
 
       {/* Floating Chat Shortcut */}
       <FloatingChatButton />
+
+      {/* Gita Remedies Modal Dialog */}
+      <AnimatePresence>
+        {selectedEmotion && (() => {
+          const remedy = EMOTION_REMEDIES[selectedEmotion];
+          if (!remedy) return null;
+          return (
+            <div className="fixed inset-0 z-55 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-card border border-primary/45 p-6 shadow-2xl backdrop-blur-md max-h-[85vh] flex flex-col justify-between text-left font-sans"
+              >
+                {/* Close Button */}
+                <button
+                  onClick={() => setSelectedEmotion(null)}
+                  className="absolute right-4 top-4 p-2 rounded-xl border border-primary/20 bg-background/50 hover:bg-primary/10 transition-colors cursor-pointer text-foreground z-10"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+
+                {/* Saffron Aura Glow */}
+                <div className="absolute -left-20 -top-20 w-44 h-44 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
+
+                <div className="overflow-y-auto pr-1 relative z-10 flex-1 space-y-4">
+                  <div>
+                    <h3 className="text-lg font-serif font-extrabold text-gradient-gold">
+                      {remedy.titleEn}
+                    </h3>
+                    <h4 className="text-sm font-bold text-foreground/80 mt-0.5">
+                      {remedy.titleKn}
+                    </h4>
+                  </div>
+
+                  {/* Divine Guidance Callout */}
+                  <div className="p-4 rounded-2xl bg-primary/5 border border-primary/25 space-y-2">
+                    <div className="flex items-center gap-1.5 text-xs text-primary font-extrabold uppercase tracking-wider">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Krishna's Advice • ಕೃಷ್ಣನ ಕಿವಿಮಾತು
+                    </div>
+                    <p className="text-xs md:text-sm font-serif italic text-foreground/90 leading-relaxed font-bold">
+                      "{remedy.krishnaAdviceEn}"
+                    </p>
+                    <p className="text-xs md:text-sm italic text-foreground/80 leading-relaxed">
+                      "{remedy.krishnaAdviceKn}"
+                    </p>
+                  </div>
+
+                  {/* Matching Verses */}
+                  <div className="space-y-3.5">
+                    <h4 className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+                      Remedy Verses • ಪರಿಹಾರ ಶ್ಲೋಕಗಳು
+                    </h4>
+                    <div className="space-y-2.5">
+                      {remedy.verses.map((verse, idx) => {
+                        return (
+                          <div key={idx} className="p-3.5 rounded-xl bg-card border border-border/50 hover:border-primary/30 transition-all flex flex-col justify-between gap-2.5">
+                            <div>
+                              <div className="flex justify-between items-center text-xs font-bold text-primary">
+                                <span>Verse {verse.chapter}.{verse.verse}</span>
+                              </div>
+                              <p className="text-[11px] text-muted-foreground leading-tight italic font-serif mt-1">
+                                {verse.desc}
+                              </p>
+                              <p className="text-xs font-semibold text-foreground/90 leading-snug mt-1.5 font-sans">
+                                {verse.descKn}
+                              </p>
+                            </div>
+                            <Link 
+                              href={`/chapter/${verse.chapter}/verse/${verse.verse}`}
+                              onClick={() => setSelectedEmotion(null)}
+                              className="px-3.5 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-[11px] rounded-lg text-center transition-all inline-flex items-center justify-center gap-1 self-start cursor-pointer font-sans"
+                            >
+                              <span>Read Full Meaning • ಶ್ಲೋಕ ಓದಿ</span>
+                              <ArrowRight className="h-3 w-3" />
+                            </Link>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-border/50 mt-4 relative z-10 flex gap-2">
+                  <button
+                    onClick={() => setSelectedEmotion(null)}
+                    className="w-full py-2.5 bg-muted hover:bg-muted-foreground/10 text-foreground text-xs font-bold rounded-xl cursor-pointer"
+                  >
+                    Close Remedies
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          );
+        })()}
+      </AnimatePresence>
 
       {/* Footer */}
       <footer className="bg-muted/30 py-8 px-4 text-center border-t border-border/50 mt-16 relative z-10">

@@ -80,8 +80,64 @@ export default function Storybook() {
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
+  const [activeSpeech, setActiveSpeech] = useState(false);
+  
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const activeScene = GITA_SCENES[activeSceneIndex];
+
+  const speakText = (text: string, lang: "kn" | "en") => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+
+    if (activeSpeech) {
+      window.speechSynthesis.cancel();
+      setActiveSpeech(false);
+      if (audioRef.current) audioRef.current.volume = 0.25; // restore
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    
+    // Clean text of punctuation details for speech synthesis
+    const cleanText = text.replace(/[*#_~`[\]()]/g, "").trim();
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = lang === "kn" ? "kn-IN" : "en-US";
+
+    const voices = window.speechSynthesis.getVoices();
+    const matchedVoice = voices.find(v => 
+      lang === "kn" 
+        ? v.lang.toLowerCase().includes("kn") || v.lang.toLowerCase().includes("kannada")
+        : v.lang.toLowerCase().startsWith("en")
+    );
+    if (matchedVoice) utterance.voice = matchedVoice;
+
+    utterance.pitch = 0.95;
+    utterance.rate = 0.9;
+
+    // Duck background music volume
+    if (audioRef.current) audioRef.current.volume = 0.05;
+
+    utterance.onend = () => {
+      setActiveSpeech(false);
+      if (audioRef.current) audioRef.current.volume = 0.25; // restore
+    };
+
+    utterance.onerror = () => {
+      setActiveSpeech(false);
+      if (audioRef.current) audioRef.current.volume = 0.25; // restore
+    };
+
+    setActiveSpeech(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Stop any active speech on scene navigation
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setActiveSpeech(false);
+    if (audioRef.current) audioRef.current.volume = 0.25;
+  }, [activeSceneIndex]);
 
   useEffect(() => {
     updateMetaTags(
@@ -348,6 +404,19 @@ export default function Storybook() {
                 aria-label="Next scene"
               >
                 <ChevronRight className="h-4.5 w-4.5" />
+              </button>
+
+              {/* Speak/Voice Narration Button */}
+              <button
+                onClick={() => speakText(activeScene.kannadaText, "kn")}
+                className={`p-2 rounded-full border transition-all cursor-pointer flex items-center justify-center ${
+                  activeSpeech 
+                    ? "bg-green-600 border-green-600 text-white animate-pulse" 
+                    : "border-white/20 bg-black/40 hover:bg-white/10 text-white"
+                }`}
+                title="Listen Voice Narration • ಧ್ವನಿ ವಿವರಣೆ ಆಲಿಸಿ"
+              >
+                <Volume2 className="h-4.5 w-4.5" />
               </button>
             </div>
 

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Play, Pause, Youtube, Film, Sparkles, BookOpen, Clock, Compass, Info, ArrowLeft, Heart, MessageSquare, Volume2, VolumeX, ChevronRight, ChevronLeft
 } from "lucide-react";
-import { ProgressBar, ParticlesBackdrop, AudioWidget, MobileNavDrawer, FloatingChatButton } from "./home";
+import { ProgressBar, ParticlesBackdrop, AudioWidget, MobileNavDrawer, FloatingChatButton, globalAudio } from "./home";
 import { updateMetaTags } from "@/lib/seo";
 
 interface StoryScene {
@@ -96,8 +96,6 @@ export default function Storybook() {
   
   const [activeSpeech, setActiveSpeech] = useState(false);
   const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
-
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const activeScene = GITA_SCENES[activeSceneIndex];
 
   const stopVoiceNarrationOnly = () => {
@@ -109,8 +107,10 @@ export default function Storybook() {
       voiceAudioRef.current = null;
     }
     setActiveSpeech(false);
-    if (audioRef.current) {
-      audioRef.current.volume = 0.25;
+    
+    // Resume background global flute audio if Storybook sequence is playing and not muted
+    if (globalAudio && isPlaying && !isAudioMuted) {
+      globalAudio.play().catch(e => console.log("Global audio play blocked:", e));
     }
   };
 
@@ -135,7 +135,8 @@ export default function Storybook() {
 
     audio.onplay = () => {
       setActiveSpeech(true);
-      if (audioRef.current) audioRef.current.volume = 0.05; // Duck background music
+      // Pause global flute audio to prevent clashing
+      if (globalAudio) globalAudio.pause();
     };
 
     audio.play().catch((err) => {
@@ -147,7 +148,6 @@ export default function Storybook() {
 
   const triggerSpeechSynthesis = (text: string, lang: "kn" | "en") => {
     if (typeof window === "undefined" || !window.speechSynthesis) {
-      // Auto advance fallback after 4 seconds if speech is unsupported
       setTimeout(() => {
         handleNarrationEnded();
       }, 4000);
@@ -169,7 +169,9 @@ export default function Storybook() {
 
     utterance.pitch = 0.95;
     utterance.rate = 0.9;
-    if (audioRef.current) audioRef.current.volume = 0.05; // Duck background music
+    
+    // Pause global flute audio to prevent clashing
+    if (globalAudio) globalAudio.pause();
 
     utterance.onend = () => {
       handleNarrationEnded();
@@ -185,13 +187,16 @@ export default function Storybook() {
 
   const handleNarrationEnded = () => {
     setActiveSpeech(false);
-    if (audioRef.current) audioRef.current.volume = 0.25; // Restore background volume
     
-    // Auto advance ONLY if we are in autoplay sequence mode!
+    // Resume global background flute audio
+    if (globalAudio && isPlaying && !isAudioMuted) {
+      globalAudio.play().catch(e => {});
+    }
+    
     if (isPlaying) {
       setActiveSceneIndex((prev) => {
         if (prev === GITA_SCENES.length - 1) {
-          return 0; // loop back to first slide
+          return 0; // loop back
         }
         return prev + 1;
       });
@@ -226,34 +231,30 @@ export default function Storybook() {
       "Gita Kannada storybook, animated Gita stories, Krishna Arjuna stories, Mahabharata cartoon Kannada, Bhagavad Gita visual book"
     );
 
-    // Initialize background audio
-    audioRef.current = new Audio("https://gita.sanatana360.com/Krishna.mp3");
-    audioRef.current.loop = true;
-    audioRef.current.volume = 0.25;
+    // Sync isAudioMuted state with globalAudio status on mount
+    if (globalAudio) {
+      setIsAudioMuted(globalAudio.muted);
+    }
 
     return () => {
       stopVoiceNarrationOnly();
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
     };
   }, []);
 
   const togglePlayback = () => {
-    if (!audioRef.current) return;
+    if (!globalAudio) return;
     if (isPlaying) {
-      audioRef.current.pause();
+      globalAudio.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play().catch(err => console.log("Audio blocked:", err));
+      globalAudio.play().catch(err => console.log("Audio blocked:", err));
       setIsPlaying(true);
     }
   };
 
   const toggleMute = () => {
-    if (!audioRef.current) return;
-    audioRef.current.muted = !isAudioMuted;
+    if (!globalAudio) return;
+    globalAudio.muted = !isAudioMuted;
     setIsAudioMuted(!isAudioMuted);
   };
 

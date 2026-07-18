@@ -15,7 +15,7 @@ import { useSpeech } from "@/lib/speech";
 import { getSadhanaStats, type SadhanaStats } from "@/lib/sadhana";
 
 // Global Audio Singleton for continuous playback across pages
-let globalAudio: HTMLAudioElement | null = null;
+export let globalAudio: HTMLAudioElement | null = null;
 if (typeof window !== "undefined") {
   globalAudio = new Audio("https://gita.sanatana360.com/Krishna.mp3");
   globalAudio.loop = true;

@@ -10,3 +10,5 @@ hostinger-upload
 hostinger-nodejs-upload
 index.cjs
 .htaccess
+.env.production
+.env.*

@@ -90,11 +90,34 @@ export default function Chat() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Communication failure.");
+        let errorMessage = "Communication failure.";
+        try {
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } else {
+            const textData = await response.text();
+            errorMessage = textData.length < 150 ? textData : `Server error (Status ${response.status})`;
+          }
+        } catch (e) {
+          errorMessage = `Server error (Status ${response.status})`;
+        }
+        throw new Error(errorMessage);
       }
 
-      const data = await response.json();
+      let data;
+      try {
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          throw new Error("Response was not in JSON format.");
+        }
+      } catch (e) {
+        throw new Error("Unable to parse cosmic response from server.");
+      }
+
       const krishnaResponse = data.response;
       const newMessages = [...updatedMessages, { role: "model" as const, content: krishnaResponse }];
       setMessages(newMessages);
@@ -105,11 +128,15 @@ export default function Chat() {
       }
     } catch (err: any) {
       console.error("Chat Error:", err);
+      let friendlyMessage = err.message || "Please try asking again.";
+      if (friendlyMessage.includes("Unexpected token '<'") || friendlyMessage.includes("DOCTYPE")) {
+        friendlyMessage = "The server returned HTML instead of JSON. This usually indicates that the Node.js backend is offline or misconfigured, or the API route was redirected to the index.html page.";
+      }
       setMessages([
         ...updatedMessages,
         { 
           role: "model", 
-          content: `My dear friend, my connection to the cosmos was interrupted: ${err.message || "Please try asking again."}` 
+          content: `My dear friend, my connection to the cosmos was interrupted: ${friendlyMessage}` 
         }
       ]);
     } finally {

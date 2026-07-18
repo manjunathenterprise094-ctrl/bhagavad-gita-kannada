@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, User, Sparkles, Check, Heart } from "lucide-react";
 import { useLocation } from "wouter";
@@ -41,8 +41,20 @@ export default function SubscribeModal() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim(), email: email.trim(), page: location }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong.");
+
+      let data;
+      try {
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          data = await res.json();
+        } else {
+          throw new Error("Invalid response format.");
+        }
+      } catch (e) {
+        throw new Error("Unable to contact the subscription service. The server may be offline.");
+      }
+
+      if (!res.ok) throw new Error(data?.error || "Something went wrong.");
 
       if (data.message === "already_subscribed") {
         setStatus("duplicate");
@@ -52,7 +64,11 @@ export default function SubscribeModal() {
       }
     } catch (err: any) {
       setStatus("error");
-      setErrorMsg(err.message || "Could not subscribe. Please try again.");
+      let friendlyMessage = err.message || "Could not subscribe. Please try again.";
+      if (friendlyMessage.includes("Unexpected token '<'") || friendlyMessage.includes("DOCTYPE")) {
+        friendlyMessage = "The subscription service returned an invalid response. The backend server might be offline.";
+      }
+      setErrorMsg(friendlyMessage);
     }
   };
 

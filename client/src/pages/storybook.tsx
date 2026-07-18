@@ -96,6 +96,8 @@ export default function Storybook() {
   
   const [activeSpeech, setActiveSpeech] = useState(false);
   const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
+  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const sceneStartTimestampRef = useRef<number>(0);
   const activeScene = GITA_SCENES[activeSceneIndex];
 
   const stopVoiceNarrationOnly = () => {
@@ -105,6 +107,10 @@ export default function Storybook() {
     if (voiceAudioRef.current) {
       voiceAudioRef.current.pause();
       voiceAudioRef.current = null;
+    }
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+      transitionTimeoutRef.current = null;
     }
     setActiveSpeech(false);
     
@@ -116,6 +122,7 @@ export default function Storybook() {
 
   const playActiveSceneNarration = (index: number) => {
     stopVoiceNarrationOnly();
+    sceneStartTimestampRef.current = Date.now();
 
     const scene = GITA_SCENES[index];
     const audioUrl = `/audio/storybook/scene_${scene.id + 1}.mp3`;
@@ -148,9 +155,7 @@ export default function Storybook() {
 
   const triggerSpeechSynthesis = (text: string, lang: "kn" | "en") => {
     if (typeof window === "undefined" || !window.speechSynthesis) {
-      setTimeout(() => {
-        handleNarrationEnded();
-      }, 4000);
+      handleNarrationEnded();
       return;
     }
 
@@ -177,7 +182,8 @@ export default function Storybook() {
       handleNarrationEnded();
     };
 
-    utterance.onerror = () => {
+    utterance.onerror = (e) => {
+      console.warn("SpeechSynthesis error:", e);
       handleNarrationEnded();
     };
 
@@ -194,13 +200,28 @@ export default function Storybook() {
     }
     
     if (isPlaying) {
-      setActiveSceneIndex((prev) => {
-        if (prev === GITA_SCENES.length - 1) {
-          return 0; // loop back
-        }
-        return prev + 1;
-      });
+      const elapsed = Date.now() - sceneStartTimestampRef.current;
+      const minDuration = 8000; // minimum slide show duration in ms (8 seconds)
+      
+      if (elapsed < minDuration) {
+        const delay = minDuration - elapsed;
+        console.log(`Narration ended/failed early. Waiting for remaining ${delay}ms before next scene.`);
+        if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+        transitionTimeoutRef.current = setTimeout(() => {
+          transitionToNextScene();
+        }, delay);
+      } else {
+        // Pause 1.5 seconds after a long narration before moving to the next slide
+        if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+        transitionTimeoutRef.current = setTimeout(() => {
+          transitionToNextScene();
+        }, 1500);
+      }
     }
+  };
+
+  const transitionToNextScene = () => {
+    setActiveSceneIndex((prev) => (prev === GITA_SCENES.length - 1 ? 0 : prev + 1));
   };
 
   const handleSpeakerClick = () => {
@@ -259,10 +280,18 @@ export default function Storybook() {
   };
 
   const nextScene = () => {
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+      transitionTimeoutRef.current = null;
+    }
     setActiveSceneIndex((prev) => (prev + 1) % GITA_SCENES.length);
   };
 
   const prevScene = () => {
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+      transitionTimeoutRef.current = null;
+    }
     setActiveSceneIndex((prev) => (prev - 1 + GITA_SCENES.length) % GITA_SCENES.length);
   };
 

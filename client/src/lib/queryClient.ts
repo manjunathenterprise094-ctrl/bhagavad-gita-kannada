@@ -38,6 +38,12 @@ export const getQueryFn: <T>(options: {
     }
 
     await throwIfResNotOk(res);
+
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error(`Expected JSON response from server but received content type: ${contentType || "none"}`);
+    }
+
     return await res.json();
   };
 

@@ -1,0 +1,19 @@
+# ----------------------------------------------------------------------
+# ॐ Bhagavad Gita App - Hostinger Node.js Routing Configuration
+# ----------------------------------------------------------------------
+
+# 1. Enable Phusion Passenger to run the Node.js application
+PassengerEnabled on
+PassengerAppStartFile app.js
+PassengerAppType node
+
+# 2. Redirect all non-file/non-directory requests to the Node.js app
+RewriteEngine On
+RewriteBase /
+
+# If it's a real file or folder, serve it directly
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Otherwise, hand the path over to Node.js (which handles both API and SPA routing)
+RewriteRule ^(.*)$ app.js/$1 [QSA,L]

@@ -880,6 +880,37 @@ export default function Home() {
 
       {/* Hero Banner Section */}
       <section className="relative pt-12 pb-6 px-4 sm:px-6 lg:px-8 text-center z-10">
+        {/* Divine Halo Aura behind Hero */}
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[320px] h-[320px] md:w-[480px] md:h-[480px] -z-10 pointer-events-none select-none opacity-30">
+          <motion.div
+            className="w-full h-full rounded-full"
+            animate={{ 
+              scale: [1, 1.05, 1],
+              rotate: 360 
+            }}
+            transition={{ 
+              duration: 35, 
+              repeat: Infinity, 
+              ease: "linear" 
+            }}
+          >
+            <div className="w-full h-full flex items-center justify-center relative">
+              <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(245,158,11,0.12)_0%,transparent_70%)] animate-pulse" />
+              <svg className="w-full h-full text-amber-500/12 stroke-current stroke-[0.5]" viewBox="0 0 100 100">
+                {Array.from({ length: 24 }).map((_, i) => (
+                  <line 
+                    key={i} 
+                    x1="50" 
+                    y1="50" 
+                    x2={50 + 42 * Math.cos((i * 15 * Math.PI) / 180)} 
+                    y2={50 + 42 * Math.sin((i * 15 * Math.PI) / 180)} 
+                  />
+                ))}
+              </svg>
+            </div>
+          </motion.div>
+        </div>
+
         <div className="max-w-4xl mx-auto">
           {/* Divine Om Badge */}
           <motion.div
@@ -1230,7 +1261,8 @@ export default function Home() {
         </div>
 
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          key={selectedPath}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
           initial="hidden"
           animate="visible"
           variants={{
@@ -1292,11 +1324,12 @@ export default function Home() {
         
         {/* Divine Guidance Widget (Shloka Roulette) */}
         <motion.div 
-          className="p-6 md:p-8 rounded-3xl bg-card/75 backdrop-blur-sm border-2 border-primary/20 hover:border-primary/45 shadow-2xl relative overflow-hidden text-center flex flex-col justify-between"
+          className="p-6 md:p-8 rounded-3xl bg-card/75 backdrop-blur-sm border-2 border-primary/20 shadow-2xl relative overflow-hidden text-center flex flex-col justify-between cursor-default transition-colors duration-300"
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
+          whileHover={{ y: -4, scale: 1.015, borderColor: "rgba(245,158,11,0.5)", boxShadow: "0 20px 40px rgba(245,158,11,0.12)" }}
+          transition={{ duration: 0.4 }}
         >
           {/* Glowing Aura background */}
           <div className="absolute -top-12 -right-12 w-24 h-24 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
@@ -1410,11 +1443,12 @@ export default function Home() {
 
         {/* Spiritual Path Assessment Widget (Quiz Card) */}
         <motion.div 
-          className="p-6 md:p-8 rounded-3xl bg-card/75 backdrop-blur-sm border-2 border-primary/20 hover:border-primary/45 shadow-2xl relative overflow-hidden text-center flex flex-col justify-between"
+          className="p-6 md:p-8 rounded-3xl bg-card/75 backdrop-blur-sm border-2 border-primary/20 shadow-2xl relative overflow-hidden text-center flex flex-col justify-between cursor-default transition-colors duration-300"
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          whileHover={{ y: -4, scale: 1.015, borderColor: "rgba(245,158,11,0.5)", boxShadow: "0 20px 40px rgba(245,158,11,0.12)" }}
+          transition={{ duration: 0.4, delay: 0.05 }}
         >
           {/* Glowing Aura background */}
           <div className="absolute -top-12 -left-12 w-24 h-24 bg-primary/10 rounded-full blur-2xl pointer-events-none" />

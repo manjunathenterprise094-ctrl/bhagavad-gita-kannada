@@ -27,10 +27,15 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-  --font-sans: "Inter", sans-serif;
-  --font-serif: "Merriweather", serif;
-  --font-display: "Playfair Display", serif;
+  --font-sans: "Inter", "Noto Serif Kannada", sans-serif;
+  --font-serif: "Merriweather", "Noto Serif Kannada", serif;
+  --font-display: "Playfair Display", "Noto Serif Kannada", serif;
+  --font-kannada: "Noto Serif Kannada", "Tiro Kannada", serif;
   --radius: 0.625rem;
+}
+
+.font-kannada {
+  font-family: var(--font-kannada);
 }
 
 :root {

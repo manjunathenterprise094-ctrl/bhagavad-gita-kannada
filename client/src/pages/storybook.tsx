@@ -162,17 +162,24 @@ export default function Storybook() {
     }
 
     window.speechSynthesis.cancel();
-    const cleanText = text.replace(/[*#_~`[\]()]/g, "").trim();
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = lang === "kn" ? "kn-IN" : "en-US";
-
+    
     const voices = window.speechSynthesis.getVoices();
     let matchedVoice = null;
+    let textToSpeak = text;
+    let activeLang = lang;
+
     if (lang === "kn") {
       matchedVoice = voices.find(v => 
         v.lang.toLowerCase().includes("kn") || v.lang.toLowerCase().includes("kannada")
       );
-    } else {
+      if (!matchedVoice) {
+        console.warn("No Kannada voice found on this device, falling back to English narration.");
+        activeLang = "en";
+        textToSpeak = activeScene.englishText;
+      }
+    }
+
+    if (activeLang === "en") {
       // 1. Try to find Indian English (en-IN) voices
       const enInVoices = voices.filter(v => v.lang.toLowerCase().includes("en-in"));
       if (enInVoices.length > 0) {
@@ -200,6 +207,10 @@ export default function Storybook() {
         matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith("en"));
       }
     }
+
+    const cleanText = textToSpeak.replace(/[*#_~`[\]()]/g, "").trim();
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = activeLang === "kn" ? "kn-IN" : "en-US";
     if (matchedVoice) utterance.voice = matchedVoice;
 
     utterance.pitch = 0.88; // Deep, resonant, warm tone

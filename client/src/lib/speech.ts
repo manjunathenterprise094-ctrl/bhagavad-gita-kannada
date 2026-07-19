@@ -2,6 +2,28 @@ import { useState, useEffect } from "react";
 
 export function useSpeech() {
   const [activeTextId, setActiveTextId] = useState<string | null>(null);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      const updateVoices = () => {
+        setVoices(window.speechSynthesis.getVoices());
+      };
+      
+      updateVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = updateVoices;
+      }
+    }
+  }, []);
+
+  const hasKannadaVoice = () => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return false;
+    const currentVoices = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
+    return currentVoices.some(v => 
+      v.lang.toLowerCase().includes("kn") || v.lang.toLowerCase().includes("kannada")
+    );
+  };
 
   const speak = (id: string, text: string, lang: "en" | "kn") => {
     if (typeof window === "undefined" || !window.speechSynthesis) {
@@ -26,17 +48,17 @@ export function useSpeech() {
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = lang === "kn" ? "kn-IN" : "en-US";
 
-    // Select a premium Indian English (en-IN) voice for authentic Sanskrit pronunciation, falling back to general English
-    const voices = window.speechSynthesis.getVoices();
+    // Select voice
+    const currentVoices = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
     let matchedVoice = null;
     
     if (lang === "kn") {
-      matchedVoice = voices.find(v => 
+      matchedVoice = currentVoices.find(v => 
         v.lang.toLowerCase().includes("kn") || v.lang.toLowerCase().includes("kannada")
       );
     } else {
       // 1. Try to find Indian English (en-IN) voices
-      const enInVoices = voices.filter(v => v.lang.toLowerCase().includes("en-in"));
+      const enInVoices = currentVoices.filter(v => v.lang.toLowerCase().includes("en-in"));
       if (enInVoices.length > 0) {
         matchedVoice = enInVoices.find(v => 
           v.name.toLowerCase().includes("ravi") || 
@@ -49,7 +71,7 @@ export function useSpeech() {
       if (!matchedVoice) {
         const voicePreferences = ["male", "david", "google us male", "natural", "en-us"];
         for (const pref of voicePreferences) {
-          matchedVoice = voices.find(v => 
+          matchedVoice = currentVoices.find(v => 
             v.lang.toLowerCase().startsWith("en") && 
             v.name.toLowerCase().includes(pref)
           );
@@ -59,7 +81,7 @@ export function useSpeech() {
       
       // 3. Absolute fallback
       if (!matchedVoice) {
-        matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith("en"));
+        matchedVoice = currentVoices.find(v => v.lang.toLowerCase().startsWith("en"));
       }
     }
     
@@ -89,17 +111,10 @@ export function useSpeech() {
     setActiveTextId(null);
   };
 
-  // Ensure voices are loaded (some browsers load them asynchronously)
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-      window.speechSynthesis.getVoices();
-    }
-    return () => {
-      if (typeof window !== "undefined" && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-    };
-  }, []);
-
-  return { activeTextId, speak, stop };
+  return {
+    activeTextId,
+    speak,
+    stop,
+    hasKannadaVoice
+  };
 }

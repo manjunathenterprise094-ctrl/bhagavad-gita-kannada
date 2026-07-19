@@ -17,7 +17,7 @@ import { useSpeech } from "@/lib/speech";
 import { getSadhanaStats, markVerseCompleted, unmarkVerseCompleted, type SadhanaStats } from "@/lib/sadhana";
 
 export default function Chapter() {
-  const { activeTextId, speak, stop } = useSpeech();
+  const { activeTextId, speak, stop, hasKannadaVoice } = useSpeech();
   const [matchId, paramsId] = useRoute("/chapter/:id");
   const [matchVerse, paramsVerse] = useRoute("/chapter/:id/verse/:verseId");
 
@@ -323,24 +323,71 @@ export default function Chapter() {
                   {chapter.id}.{verse.verse}
                 </span>
 
-                <button
-                  type="button"
-                  onClick={() => speak(verse.id, verse.meaning, "kn")}
-                  className="p-1 rounded-lg border border-primary/20 bg-background/50 hover:bg-primary/5 transition-colors cursor-pointer text-muted-foreground hover:text-primary flex items-center gap-1 text-[10px] font-sans font-bold"
-                  aria-label="Listen translation"
-                >
+                <div className="flex items-center gap-2 flex-wrap">
                   {activeTextId === verse.id ? (
-                    <>
-                      <VolumeX className="h-3.5 w-3.5 text-red-500 animate-pulse" />
-                      <span className="hidden sm:inline">Stop</span>
-                    </>
+                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 rounded-full px-3 py-1 shadow-sm transition-all duration-300">
+                      <span className="flex gap-0.5 items-end justify-center h-3 w-3 shrink-0 pb-0.5">
+                        <span className="w-0.5 h-2 bg-amber-500 animate-bounce rounded-full" style={{ animationDelay: "0s" }} />
+                        <span className="w-0.5 h-3 bg-amber-500 animate-bounce rounded-full" style={{ animationDelay: "0.15s" }} />
+                        <span className="w-0.5 h-1.5 bg-amber-500 animate-bounce rounded-full" style={{ animationDelay: "0.3s" }} />
+                      </span>
+                      <span className="text-[10px] font-sans font-bold text-amber-600 dark:text-amber-400">Playing Meaning</span>
+                      <button
+                        type="button"
+                        onClick={() => stop()}
+                        className="p-0.5 rounded-full bg-amber-500 text-white hover:bg-amber-600 transition-colors cursor-pointer flex items-center justify-center shadow"
+                        title="Stop Narration"
+                      >
+                        <VolumeX className="h-2.5 w-2.5 fill-white text-white" />
+                      </button>
+                    </div>
+                  ) : activeTextId === verse.id + "-sloka" ? (
+                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 rounded-full px-3 py-1 shadow-sm transition-all duration-300">
+                      <span className="flex gap-0.5 items-end justify-center h-3 w-3 shrink-0 pb-0.5">
+                        <span className="w-0.5 h-2 bg-amber-500 animate-bounce rounded-full" style={{ animationDelay: "0s" }} />
+                        <span className="w-0.5 h-3 bg-amber-500 animate-bounce rounded-full" style={{ animationDelay: "0.15s" }} />
+                        <span className="w-0.5 h-1.5 bg-amber-500 animate-bounce rounded-full" style={{ animationDelay: "0.3s" }} />
+                      </span>
+                      <span className="text-[10px] font-sans font-bold text-amber-600 dark:text-amber-400">Playing Sloka</span>
+                      <button
+                        type="button"
+                        onClick={() => stop()}
+                        className="p-0.5 rounded-full bg-amber-500 text-white hover:bg-amber-600 transition-colors cursor-pointer flex items-center justify-center shadow"
+                        title="Stop Narration"
+                      >
+                        <VolumeX className="h-2.5 w-2.5 fill-white text-white" />
+                      </button>
+                    </div>
                   ) : (
-                    <>
-                      <Volume2 className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">Listen</span>
-                    </>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!hasKannadaVoice()) {
+                            speak(verse.id + "-sloka", verse.transliteration, "en");
+                          } else {
+                            speak(verse.id, verse.meaning, "kn");
+                          }
+                        }}
+                        className="px-3 py-1 rounded-full border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary transition-all duration-200 cursor-pointer flex items-center gap-1 text-[10px] font-sans font-bold shadow-sm hover:scale-105 active:scale-95"
+                        title={hasKannadaVoice() ? "Listen to Kannada meaning" : "No Kannada voice, listen to English sloka recitation"}
+                      >
+                        <Volume2 className="h-3.5 w-3.5" />
+                        <span>Listen Meaning</span>
+                      </button>
+                      
+                      <button
+                        type="button"
+                        onClick={() => speak(verse.id + "-sloka", verse.transliteration, "en")}
+                        className="px-3 py-1 rounded-full border border-primary/20 bg-background/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all duration-200 cursor-pointer flex items-center gap-1 text-[10px] font-sans font-bold shadow-sm hover:scale-105 active:scale-95"
+                        title="Listen to Sanskrit sloka transliteration in English"
+                      >
+                        <Volume2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+                        <span>Listen Sloka</span>
+                      </button>
+                    </div>
                   )}
-                </button>
+                </div>
               </div>
 
               <div className="flex items-center gap-1.5">

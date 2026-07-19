@@ -241,13 +241,23 @@ export default function Pravachana() {
     setMirrorIdx(0);
   }, [currentTrackIdx]);
 
-  // Sync Audio Playback when track index or mirror changes
+  // Single Unified Effect to control play, pause, and source loading
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    audio.pause();
-    audio.load();
+    const currentUrl = `${BASE_URLS[mirrorIdx]}${currentTrack.filename}`;
+    // Check if the current audio tag's src matches the target URL
+    const isSameSource = audio.src && (audio.src === currentUrl || audio.src.includes(currentTrack.filename));
+
+    if (!isSameSource) {
+      audio.pause();
+      audio.src = currentUrl;
+      audio.load();
+      setCurrentTime(0);
+      setDuration(0);
+    }
+
     if (isPlaying) {
       const playPromise = audio.play();
       if (playPromise !== undefined) {
@@ -255,30 +265,12 @@ export default function Pravachana() {
           console.warn("Playback initialization failed for mirror:", mirrorIdx, err);
         });
       }
-    }
-  }, [currentTrackIdx, mirrorIdx]);
-
-  // Sync play/pause state when isPlaying changes
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (isPlaying) {
-      if (audio.paused) {
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-          playPromise.catch((err) => {
-            console.warn("Play request failed:", err);
-            setIsPlaying(false);
-          });
-        }
-      }
     } else {
       if (!audio.paused) {
         audio.pause();
       }
     }
-  }, [isPlaying]);
+  }, [currentTrackIdx, mirrorIdx, isPlaying]);
 
   // Handle Play Pause click
   const togglePlay = () => {

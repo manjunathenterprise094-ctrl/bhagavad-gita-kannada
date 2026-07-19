@@ -99,8 +99,10 @@ export default function Storybook() {
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const sceneStartTimestampRef = useRef<number>(0);
   const activeScene = GITA_SCENES[activeSceneIndex];
+  const ignoreSpeechEndRef = useRef(false);
 
   const stopVoiceNarrationOnly = () => {
+    ignoreSpeechEndRef.current = true;
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
@@ -113,26 +115,29 @@ export default function Storybook() {
       transitionTimeoutRef.current = null;
     }
     setActiveSpeech(false);
-    
-    // Resume background global flute audio if Storybook sequence is playing and not muted
-    if (globalAudio && isPlaying && !isAudioMuted) {
-      globalAudio.play().catch(e => console.log("Global audio play blocked:", e));
-    }
   };
 
   const playActiveSceneNarration = (index: number) => {
     stopVoiceNarrationOnly();
     sceneStartTimestampRef.current = Date.now();
+    ignoreSpeechEndRef.current = false;
 
     const scene = GITA_SCENES[index];
     const audioUrl = `/audio/storybook/scene_${scene.id + 1}.mp3`;
     const audio = new Audio(audioUrl);
     voiceAudioRef.current = audio;
 
-    audio.onerror = () => {
-      console.log(`Voiceover MP3 for scene ${scene.id + 1} not found, playing TTS...`);
+    let fallbackTriggered = false;
+    const triggerFallback = () => {
+      if (fallbackTriggered) return;
+      fallbackTriggered = true;
       voiceAudioRef.current = null;
       triggerSpeechSynthesis(scene.kannadaText, "kn");
+    };
+
+    audio.onerror = () => {
+      console.log(`Voiceover MP3 for scene ${scene.id + 1} not found, playing TTS...`);
+      triggerFallback();
     };
 
     audio.onended = () => {
@@ -142,14 +147,11 @@ export default function Storybook() {
 
     audio.onplay = () => {
       setActiveSpeech(true);
-      // Pause global flute audio to prevent clashing
-      if (globalAudio) globalAudio.pause();
     };
 
     audio.play().catch((err) => {
       console.warn("Audio play blocked, using TTS fallback:", err);
-      voiceAudioRef.current = null;
-      triggerSpeechSynthesis(scene.kannadaText, "kn");
+      triggerFallback();
     });
   };
 
@@ -203,14 +205,17 @@ export default function Storybook() {
     utterance.pitch = 0.88; // Deep, resonant, warm tone
     utterance.rate = 0.82;  // Slow, comforting pace
 
-    // Pause global flute audio to prevent clashing
-    if (globalAudio) globalAudio.pause();
-
     utterance.onend = () => {
+      if (ignoreSpeechEndRef.current) {
+        return;
+      }
       handleNarrationEnded();
     };
 
     utterance.onerror = (e) => {
+      if (ignoreSpeechEndRef.current) {
+        return;
+      }
       console.warn("SpeechSynthesis error:", e);
       handleNarrationEnded();
     };
@@ -221,11 +226,6 @@ export default function Storybook() {
 
   const handleNarrationEnded = () => {
     setActiveSpeech(false);
-    
-    // Resume global background flute audio
-    if (globalAudio && isPlaying && !isAudioMuted) {
-      globalAudio.play().catch(e => {});
-    }
     
     if (isPlaying) {
       const elapsed = Date.now() - sceneStartTimestampRef.current;
@@ -287,12 +287,9 @@ export default function Storybook() {
   }, []);
 
   const togglePlayback = () => {
-    if (!globalAudio) return;
     if (isPlaying) {
-      globalAudio.pause();
       setIsPlaying(false);
     } else {
-      globalAudio.play().catch(err => console.log("Audio blocked:", err));
       setIsPlaying(true);
       // Play initial narration inside user click context to bypass browser speech blocks
       playActiveSceneNarration(activeSceneIndex);
@@ -300,8 +297,6 @@ export default function Storybook() {
   };
 
   const toggleMute = () => {
-    if (!globalAudio) return;
-    globalAudio.muted = !isAudioMuted;
     setIsAudioMuted(!isAudioMuted);
   };
 

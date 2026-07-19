@@ -17,11 +17,6 @@ import { getSadhanaStats, type SadhanaStats } from "@/lib/sadhana";
 
 // Global Audio Singleton for continuous playback across pages
 export let globalAudio: HTMLAudioElement | null = null;
-if (typeof window !== "undefined") {
-  globalAudio = new Audio("https://archive.org/serve/classical-music-flute/Classical%20Music-Flute/03-Theeratha%20Villattu%20Pillai.mp3");
-  globalAudio.loop = true;
-  globalAudio.volume = 0.2;
-}
 
 // 1. Scroll Progress Bar Component
 export function ProgressBar() {
@@ -225,93 +220,7 @@ export function ParticlesBackdrop() {
 
 // 3. Audio Player Component
 export function AudioWidget() {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(20);
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  useEffect(() => {
-    if (globalAudio) {
-      setIsPlaying(!globalAudio.paused);
-      setVolume(globalAudio.volume * 100);
-    }
-  }, []);
-
-  const togglePlayback = () => {
-    if (!globalAudio) return;
-    if (isPlaying) {
-      globalAudio.pause();
-      setIsPlaying(false);
-    } else {
-      globalAudio.play().catch(err => console.log("Audio play blocked by browser:", err));
-      setIsPlaying(true);
-    }
-  };
-
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseInt(e.target.value, 10);
-    setVolume(val);
-    if (globalAudio) {
-      globalAudio.volume = val / 100;
-    }
-  };
-
-  return (
-    <motion.div 
-      className="fixed bottom-20 md:bottom-6 right-6 md:right-40 z-40 bg-card/95 backdrop-blur-md border border-primary/20 rounded-full p-1.5 shadow-2xl flex items-center gap-2 overflow-hidden cursor-pointer shadow-primary/5 select-none"
-      animate={{ 
-        width: isExpanded ? "210px" : "44px",
-      }}
-      transition={{ type: "spring", stiffness: 350, damping: 28 }}
-      onMouseEnter={() => setIsExpanded(true)}
-      onMouseLeave={() => setIsExpanded(false)}
-      onClick={() => setIsExpanded(!isExpanded)}
-    >
-      {/* Icon Sphere */}
-      <div className="p-2 rounded-full bg-primary text-primary-foreground flex items-center justify-center h-8.5 w-8.5 shrink-0 shadow-md">
-        {isPlaying ? (
-          <Volume2 className="h-4 w-4 animate-pulse" />
-        ) : (
-          <VolumeX className="h-4 w-4" />
-        )}
-      </div>
-
-      {/* Expanded Controls Panel */}
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div 
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 10 }}
-            transition={{ duration: 0.15 }}
-            className="flex items-center gap-2 pr-3"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Play Button Toggle */}
-            <button 
-              onClick={togglePlayback}
-              className="text-[11px] font-sans font-bold text-primary hover:text-primary/80 transition-colors uppercase px-1 cursor-pointer"
-            >
-              {isPlaying ? "Pause" : "Play"}
-            </button>
-
-            {/* Separator */}
-            <div className="h-3.5 w-px bg-primary/15" />
-
-            {/* Slider */}
-            <input 
-              type="range" 
-              min="0" 
-              max="100" 
-              value={volume}
-              onChange={handleVolumeChange}
-              className="w-16 h-1 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary focus:outline-none"
-              aria-label="Volume slider"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
+  return null;
 }
 
 // 4. Mobile Nav Drawer Menu Component

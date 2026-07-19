@@ -380,20 +380,7 @@ export default function Chapter() {
                         title={hasKannadaVoice() ? "Listen to Kannada meaning" : "No Kannada voice, listen to English sloka recitation"}
                       >
                         <Volume2 className="h-3.5 w-3.5" />
-                        <span>Listen Meaning</span>
-                      </button>
-                      
-                      <button
-                        type="button"
-                        onClick={() => speak(verse.id + "-sloka", verse.transliteration, "en", {
-                          title: `Chapter ${chapter.id} • Verse ${verse.verse}`,
-                          subtitle: "Sanskrit Sloka Recitation"
-                        })}
-                        className="px-3 py-1 rounded-full border border-primary/20 bg-background/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all duration-200 cursor-pointer flex items-center gap-1 text-[10px] font-sans font-bold shadow-sm hover:scale-105 active:scale-95"
-                        title="Listen to Sanskrit sloka transliteration in English"
-                      >
-                        <Volume2 className="h-3.5 w-3.5" strokeWidth={2.5} />
-                        <span>Listen Sloka</span>
+                        <span>Listen</span>
                       </button>
                     </div>
                   )}

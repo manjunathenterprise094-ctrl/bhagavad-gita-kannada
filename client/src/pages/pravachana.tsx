@@ -8,7 +8,7 @@ import { Link } from "wouter";
 import { 
   ProgressBar, ParticlesBackdrop
 } from "./home";
-import { updateMetaTags } from "@/lib/seo";
+import { updateMetaTags, updateSchemaOrg } from "@/lib/seo";
 import Navbar from "@/components/Navbar";
 
 interface Track {
@@ -234,6 +234,17 @@ export default function Pravachana() {
       "Listen to the complete Srimad Bhagavad Gita audio pravachana (chapters 1 to 18) in Kannada translation. Free streamable Yatharth Geeta discourse.",
       "Kannada Bhagavad Gita audio, Gita pravachana, listen Gita Kannada, Gita MP3 download, Yatharth Geeta audio Kannada"
     );
+    updateSchemaOrg({
+      "@context": "https://schema.org",
+      "@type": "AudioObject",
+      "name": "Yatharth Geeta Kannada Pravachana Full Audio Discourse",
+      "description": "Complete audio discourse and pravachana of 18 chapters of Bhagavad Gita in Kannada translation.",
+      "contentUrl": "https://archive.org/serve/YatharthGeetaKannadaAudio/01_Chapter01_YatharthGeetaKannada.mp3",
+      "creator": {
+        "@type": "Person",
+        "name": "Swami Adgadanand"
+      }
+    });
   }, []);
 
   // Reset mirror index to 0 when track index changes

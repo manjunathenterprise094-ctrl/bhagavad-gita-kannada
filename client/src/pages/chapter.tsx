@@ -198,14 +198,14 @@ export default function Chapter() {
   useEffect(() => {
     if (chapter) {
       updateMetaTags(
-        `${chapter.id}. ${chapter.kannadaTitle} (${chapter.title}) | Srimad Bhagavad Gita`,
-        `Read Srimad Bhagavad Gita Chapter ${chapter.id} (${chapter.title}) with full Kannada translations, Sanskrit slokas, and transliteration: ${chapter.description}`,
-        `Chapter ${chapter.id}, ${chapter.title}, ${chapter.kannadaTitle}, Srimad Bhagavad Gita, Kannada translation, Slokas, Verses`
+        `${chapter.kannadaTitle} | Chapter ${chapter.id} - Srimad Bhagavad Gita`,
+        `Read Srimad Bhagavad Gita Chapter ${chapter.id}: ${chapter.title} in Kannada and English with translations and meanings.`,
+        `Chapter ${chapter.id}, ${chapter.title}, Gita chapters, Kannada translation`
       );
       updateSchemaOrg({
         "@context": "https://schema.org",
-        "@type": "Chapter",
-        "name": `Chapter ${chapter.id}: ${chapter.title} - ${chapter.kannadaTitle}`,
+        "@type": "BookSection",
+        "name": `${chapter.kannadaTitle} - ${chapter.title}`,
         "description": chapter.description,
         "position": chapter.id,
         "isPartOf": {

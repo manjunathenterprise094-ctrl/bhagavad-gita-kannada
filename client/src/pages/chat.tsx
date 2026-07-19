@@ -12,7 +12,7 @@ import {
 import { 
   ProgressBar, ParticlesBackdrop, AudioWidget, MobileNavDrawer 
 } from "./home";
-import { updateMetaTags } from "@/lib/seo";
+import { updateMetaTags, updateSchemaOrg } from "@/lib/seo";
 import Navbar from "@/components/Navbar";
 import { useSpeech } from "@/lib/speech";
 import { bhagavadGitaData } from "@/lib/gita-data";
@@ -175,6 +175,18 @@ export default function Chat() {
       "Speak directly with Lord Krishna AI chatbot to resolve your spiritual doubts, life problems, duty, and yoga. Get pure answers from the Srimad Bhagavad Gita.",
       "Krishna AI, Gita chatbot, ask Krishna, Bhagavad Gita questions, spiritual chatbot, Srimad Bhagavad Gita, Kannada translation"
     );
+    updateSchemaOrg({
+      "@context": "https://schema.org",
+      "@type": "QAPage",
+      "mainEntity": {
+        "@type": "Question",
+        "name": "Ask Lord Krishna AI chatbot about Srimad Bhagavad Gita",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Speak directly to an AI representation of Lord Krishna for answers from the 700 verses and 18 chapters of Bhagavad Gita in Kannada and English."
+        }
+      }
+    });
   }, []);
 
   const handleSend = async (e: React.FormEvent) => {

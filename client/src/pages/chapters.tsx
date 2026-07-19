@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ProgressBar, ParticlesBackdrop, AudioWidget, MobileNavDrawer, FloatingChatButton 
 } from "./home";
-import { updateMetaTags } from "@/lib/seo";
+import { updateMetaTags, updateSchemaOrg } from "@/lib/seo";
 import Navbar from "@/components/Navbar";
 
 export default function Chapters() {
@@ -32,6 +32,20 @@ export default function Chapters() {
       "Read all 18 chapters of Srimad Bhagavad Gita with slokas and meanings in Kannada and English. Search chapters and filter by interest paths.",
       "Gita chapters, 18 chapters, Arjuna, Lord Krishna, Srimad Bhagavad Gita chapters list, Kannada translations"
     );
+    updateSchemaOrg({
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "18 Chapters of Srimad Bhagavad Gita",
+      "description": "Comprehensive list of all 18 chapters of Srimad Bhagavad Gita in Kannada and English translation.",
+      "about": {
+        "@type": "Book",
+        "name": "Srimad Bhagavad Gita",
+        "author": {
+          "@type": "Person",
+          "name": "Lord Krishna"
+        }
+      }
+    });
   }, []);
 
   // Filter based on path AND keyword search

@@ -5,7 +5,7 @@ import {
   Play, Pause, Youtube, Film, Sparkles, BookOpen, Clock, Compass, Info, ArrowLeft, Heart, MessageSquare, Volume2, VolumeX, ChevronRight, ChevronLeft
 } from "lucide-react";
 import { ProgressBar, ParticlesBackdrop, AudioWidget, MobileNavDrawer, FloatingChatButton, globalAudio } from "./home";
-import { updateMetaTags } from "@/lib/seo";
+import { updateMetaTags, updateSchemaOrg } from "@/lib/seo";
 import Navbar from "@/components/Navbar";
 
 interface StoryScene {
@@ -286,6 +286,18 @@ export default function Storybook() {
       "Experience the visual storybook of Srimad Bhagavad Gita in Kannada and English with devotional flute audio, animated scenes, and key teachings.",
       "Gita Kannada storybook, animated Gita stories, Krishna Arjuna stories, Mahabharata cartoon Kannada, Bhagavad Gita visual book"
     );
+    updateSchemaOrg({
+      "@context": "https://schema.org",
+      "@type": "CreativeWork",
+      "name": "Gita Interactive Devotional Storybook",
+      "description": "Interactive visual storybook of Srimad Bhagavad Gita in Kannada and English.",
+      "audience": {
+        "@type": "Audience",
+        "audienceType": "Spiritual Seekers, Children, Devotees"
+      },
+      "educationalUse": "Spiritual Education",
+      "genre": "Devotional, Animation, Visual Story"
+    });
 
     // Sync isAudioMuted state with globalAudio status on mount
     if (globalAudio) {

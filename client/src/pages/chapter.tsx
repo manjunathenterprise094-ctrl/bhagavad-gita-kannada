@@ -364,23 +364,38 @@ export default function Chapter() {
                       <button
                         type="button"
                         onClick={() => {
+                          speak(verse.id, verse.meaning, "kn", {
+                            title: `Chapter ${chapter.id} • Verse ${verse.verse}`,
+                            subtitle: "Kannada Meaning (ಅರ್ಥ)"
+                          });
+                        }}
+                        className="px-3 py-1 rounded-full border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary transition-all duration-200 cursor-pointer flex items-center gap-1 text-[10px] font-sans font-bold shadow-sm hover:scale-105 active:scale-95"
+                        title="Listen to Kannada meaning"
+                      >
+                        <Volume2 className="h-3.5 w-3.5" />
+                        <span>Listen Meaning</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
                           if (!hasKannadaVoice()) {
                             speak(verse.id + "-sloka", verse.transliteration, "en", {
                               title: `Chapter ${chapter.id} • Verse ${verse.verse}`,
                               subtitle: "Sanskrit Sloka Recitation"
                             });
                           } else {
-                            speak(verse.id, verse.meaning, "kn", {
+                            speak(verse.id + "-sloka", verse.kannada, "kn", {
                               title: `Chapter ${chapter.id} • Verse ${verse.verse}`,
-                              subtitle: "Kannada Meaning (ಅರ್ಥ)"
+                              subtitle: "Sanskrit Sloka Recitation"
                             });
                           }
                         }}
-                        className="px-3 py-1 rounded-full border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary transition-all duration-200 cursor-pointer flex items-center gap-1 text-[10px] font-sans font-bold shadow-sm hover:scale-105 active:scale-95"
-                        title={hasKannadaVoice() ? "Listen to Kannada meaning" : "No Kannada voice, listen to English sloka recitation"}
+                        className="px-3 py-1 rounded-full border border-primary/20 bg-background/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all duration-200 cursor-pointer flex items-center gap-1 text-[10px] font-sans font-bold shadow-sm hover:scale-105 active:scale-95"
+                        title="Listen to Sanskrit sloka"
                       >
-                        <Volume2 className="h-3.5 w-3.5" />
-                        <span>Listen</span>
+                        <Volume2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+                        <span>Listen Sloka</span>
                       </button>
                     </div>
                   )}

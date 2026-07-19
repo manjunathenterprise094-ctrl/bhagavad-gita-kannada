@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
+import { motion, AnimatePresence } from "framer-motion";
 import { bhagavadGitaData } from "@/lib/gita-data";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ArrowLeft, Type, Menu, Bookmark, Volume2, VolumeX, Share2, CheckCircle2, Download, X, Sparkles, Play, Pause } from "lucide-react";

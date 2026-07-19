@@ -1681,6 +1681,84 @@ export default function Home() {
   );
 }
 
+export function PeacockFeatherIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg 
+      viewBox="0 0 100 100" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg" 
+      className={className}
+    >
+      <defs>
+        {/* Peacock Feather Outer Teal/Green Gradient */}
+        <linearGradient id="chatFeatherTeal" x1="20" y1="20" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#10b981" />
+          <stop offset="50%" stopColor="#059669" />
+          <stop offset="100%" stopColor="#047857" />
+        </linearGradient>
+
+        {/* Peacock Feather Inner Blue/Indigo Gradient */}
+        <linearGradient id="chatFeatherBlue" x1="30" y1="30" x2="70" y2="70" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#3b82f6" />
+          <stop offset="50%" stopColor="#2563eb" />
+          <stop offset="100%" stopColor="#1d4ed8" />
+        </linearGradient>
+
+        {/* Peacock Feather Deep Core */}
+        <radialGradient id="chatFeatherCore" cx="50" cy="45" r="15" fx="50" fy="45" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#818cf8" />
+          <stop offset="60%" stopColor="#4f46e5" />
+          <stop offset="100%" stopColor="#312e81" />
+        </radialGradient>
+      </defs>
+
+      {/* Main Feather Stem */}
+      <path 
+        d="M50 90 C52 70 52 50 50 40" 
+        stroke="#fbbf24" 
+        strokeWidth="3.5" 
+        strokeLinecap="round" 
+      />
+
+      {/* Outer green vane */}
+      <path 
+        d="M50 40 C30 15 20 35 50 70 C80 35 70 15 50 40 Z" 
+        fill="url(#chatFeatherTeal)" 
+        stroke="#fbbf24" 
+        strokeWidth="1.5" 
+      />
+
+      {/* Inner blue vane */}
+      <path 
+        d="M50 40 C38 23 32 37 50 58 C68 37 62 23 50 40 Z" 
+        fill="url(#chatFeatherBlue)" 
+        stroke="#fbbf24" 
+        strokeWidth="1" 
+      />
+
+      {/* Core eye */}
+      <ellipse 
+        cx="50" 
+        cy="43" 
+        rx="10" 
+        ry="8" 
+        fill="url(#chatFeatherCore)" 
+        stroke="#38bdf8" 
+        strokeWidth="0.75" 
+      />
+      
+      {/* Light Reflection */}
+      <circle 
+        cx="48" 
+        cy="41" 
+        r="2" 
+        fill="#ffffff" 
+        opacity="0.7" 
+      />
+    </svg>
+  );
+}
+
 export function FloatingChatButton() {
   return (
     <Link href="/chat">
@@ -1696,7 +1774,20 @@ export function FloatingChatButton() {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
         </span>
-        <MessageSquareMore className="h-4.5 w-4.5 text-primary-foreground" />
+        <motion.div
+          animate={{
+            rotate: [-6, 6, -6],
+            scale: [0.92, 1.08, 0.92]
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="shrink-0 flex items-center justify-center"
+        >
+          <PeacockFeatherIcon className="h-5.5 w-5.5" />
+        </motion.div>
         <span className="text-xs font-bold font-sans tracking-wide whitespace-nowrap">
           Ask Krishna
         </span>

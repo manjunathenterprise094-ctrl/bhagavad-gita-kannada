@@ -18,7 +18,7 @@ import { getSadhanaStats, type SadhanaStats } from "@/lib/sadhana";
 // Global Audio Singleton for continuous playback across pages
 export let globalAudio: HTMLAudioElement | null = null;
 if (typeof window !== "undefined") {
-  globalAudio = new Audio("https://gita.sanatana360.com/Krishna.mp3");
+  globalAudio = new Audio("https://archive.org/serve/classical-music-flute/Classical%20Music-Flute/03-Theeratha%20Villattu%20Pillai.mp3");
   globalAudio.loop = true;
   globalAudio.volume = 0.2;
 }

@@ -215,8 +215,17 @@ export default function Pravachana() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const [mirrorIdx, setMirrorIdx] = useState(0);
+
+  const BASE_URLS = [
+    "https://archive.org/serve/YatharthGeetaKannadaAudio/",
+    "https://ia801604.us.archive.org/26/items/YatharthGeetaKannadaAudio/",
+    "https://ia601604.us.archive.org/26/items/YatharthGeetaKannadaAudio/",
+    "https://archive.org/download/YatharthGeetaKannadaAudio/"
+  ];
+
   const currentTrack = TRACKS[currentTrackIdx];
-  const audioUrl = `https://archive.org/serve/YatharthGeetaKannadaAudio/${currentTrack.filename}`;
+  const audioUrl = `${BASE_URLS[mirrorIdx]}${currentTrack.filename}`;
 
   // SEO Update
   useEffect(() => {
@@ -227,26 +236,64 @@ export default function Pravachana() {
     );
   }, []);
 
-  // Sync Audio Playback
+  // Reset mirror index to 0 when track index changes
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.load();
-      if (isPlaying) {
-        audioRef.current.play().catch(() => setIsPlaying(false));
-      }
-    }
+    setMirrorIdx(0);
   }, [currentTrackIdx]);
 
-  // Handle Play Pause
+  // Sync Audio Playback when track index or mirror changes
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.pause();
+    audio.load();
+    if (isPlaying) {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn("Playback initialization failed for mirror:", mirrorIdx, err);
+        });
+      }
+    }
+  }, [currentTrackIdx, mirrorIdx]);
+
+  // Sync play/pause state when isPlaying changes
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      if (audio.paused) {
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn("Play request failed:", err);
+            setIsPlaying(false);
+          });
+        }
+      }
+    } else {
+      if (!audio.paused) {
+        audio.pause();
+      }
+    }
+  }, [isPlaying]);
+
+  // Handle Play Pause click
   const togglePlay = () => {
     if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
+    setIsPlaying(!isPlaying);
+  };
+
+  // Handle Audio error - try fallback mirror
+  const handleAudioError = (e: any) => {
+    console.error("Audio error event triggered on mirror:", mirrorIdx, e);
+    if (mirrorIdx < BASE_URLS.length - 1) {
+      setMirrorIdx((prev) => prev + 1);
     } else {
-      audioRef.current.play().catch(() => setIsPlaying(false));
-      setIsPlaying(true);
+      console.error("All mirrors failed to load the audio file.");
+      setIsPlaying(false);
     }
   };
 
@@ -337,6 +384,7 @@ export default function Pravachana() {
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={playNext}
+        onError={handleAudioError}
         preload="metadata"
       />
 

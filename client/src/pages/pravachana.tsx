@@ -132,7 +132,7 @@ const TRACKS: Track[] = [
   },
   {
     id: 12,
-    filename: "12Chapter12.mp3",
+    filename: "13Chapter12.mp3",
     titleKn: "ಅಧ್ಯಾಯ 12: ಭಕ್ತಿ ಯೋಗ",
     titleEn: "Chapter 12: Bhakti Yoga",
     descriptionKn: "ಸಗುಣ ಮತ್ತು ನಿರ್ಗುಣ ಉಪಾಸನೆ ಹಾಗೂ ಭಕ್ತನ ಲಕ್ಷಣಗಳು.",
@@ -216,7 +216,7 @@ export default function Pravachana() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const currentTrack = TRACKS[currentTrackIdx];
-  const audioUrl = `https://archive.org/download/YatharthGeetaKannadaAudio/${currentTrack.filename}`;
+  const audioUrl = `https://archive.org/serve/YatharthGeetaKannadaAudio/${currentTrack.filename}`;
 
   // SEO Update
   useEffect(() => {

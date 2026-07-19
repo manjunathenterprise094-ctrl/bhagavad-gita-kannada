@@ -50,8 +50,22 @@ export function useSpeech() {
     setIsPaused(false);
     setActiveInfo(info || null);
     
-    // Clean markdown characters like asterisks, hashtags, links, code blocks
-    const cleanText = text
+    // Clean markdown characters and convert Sanskrit diacritics to plain ASCII English
+    let cleanText = text;
+    if (lang === "en") {
+      cleanText = cleanText
+        .replace(/\|/g, ",") // Replace Sanskrit pipes with commas for natural pauses
+        .replace(/ṛ/g, "ri")
+        .replace(/Ṛ/g, "Ri")
+        .replace(/ś/g, "sh")
+        .replace(/Ś/g, "Sh")
+        .replace(/ṣ/g, "sh")
+        .replace(/Ṣ/g, "Sh")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    cleanText = cleanText
       .replace(/[*#_~`[\]()]/g, "")
       .replace(/https?:\/\/\S+/g, "") // remove URLs
       .trim();

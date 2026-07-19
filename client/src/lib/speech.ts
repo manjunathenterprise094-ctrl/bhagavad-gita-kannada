@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
 
+export interface SpeechActiveInfo {
+  title: string;
+  subtitle: string;
+}
+
 export function useSpeech() {
   const [activeTextId, setActiveTextId] = useState<string | null>(null);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [isPaused, setIsPaused] = useState(false);
+  const [activeInfo, setActiveInfo] = useState<SpeechActiveInfo | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.speechSynthesis) {
@@ -25,7 +32,7 @@ export function useSpeech() {
     );
   };
 
-  const speak = (id: string, text: string, lang: "en" | "kn") => {
+  const speak = (id: string, text: string, lang: "en" | "kn", info?: SpeechActiveInfo) => {
     if (typeof window === "undefined" || !window.speechSynthesis) {
       console.warn("Speech synthesis not supported in this browser.");
       return;
@@ -34,10 +41,14 @@ export function useSpeech() {
     if (activeTextId === id) {
       window.speechSynthesis.cancel();
       setActiveTextId(null);
+      setIsPaused(false);
+      setActiveInfo(null);
       return;
     }
 
     window.speechSynthesis.cancel();
+    setIsPaused(false);
+    setActiveInfo(info || null);
     
     // Clean markdown characters like asterisks, hashtags, links, code blocks
     const cleanText = text
@@ -46,7 +57,6 @@ export function useSpeech() {
       .trim();
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = lang === "kn" ? "kn-IN" : "en-US";
 
     // Select voice
     const currentVoices = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
@@ -87,6 +97,9 @@ export function useSpeech() {
     
     if (matchedVoice) {
       utterance.voice = matchedVoice;
+      utterance.lang = matchedVoice.lang; // Fix language mismatch failure
+    } else {
+      utterance.lang = lang === "kn" ? "kn-IN" : "en-US";
     }
     
     utterance.pitch = 0.90; // Balanced deep, resonant tone
@@ -94,14 +107,33 @@ export function useSpeech() {
 
     utterance.onend = () => {
       setActiveTextId(null);
+      setIsPaused(false);
+      setActiveInfo(null);
     };
     
-    utterance.onerror = () => {
+    utterance.onerror = (err) => {
+      console.error("SpeechSynthesis error:", err);
       setActiveTextId(null);
+      setIsPaused(false);
+      setActiveInfo(null);
     };
 
     setActiveTextId(id);
     window.speechSynthesis.speak(utterance);
+  };
+
+  const pauseSpeech = () => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.pause();
+      setIsPaused(true);
+    }
+  };
+
+  const resumeSpeech = () => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.resume();
+      setIsPaused(false);
+    }
   };
 
   const stop = () => {
@@ -109,12 +141,18 @@ export function useSpeech() {
       window.speechSynthesis.cancel();
     }
     setActiveTextId(null);
+    setIsPaused(false);
+    setActiveInfo(null);
   };
 
   return {
     activeTextId,
     speak,
     stop,
+    pauseSpeech,
+    resumeSpeech,
+    isPaused,
+    activeInfo,
     hasKannadaVoice
   };
 }

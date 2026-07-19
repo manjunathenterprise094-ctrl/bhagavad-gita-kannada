@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
 import { bhagavadGitaData } from "@/lib/gita-data";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { ArrowLeft, Type, Menu, Bookmark, Volume2, VolumeX, Share2, CheckCircle2, Download, X, Sparkles } from "lucide-react";
+import { ArrowLeft, Type, Menu, Bookmark, Volume2, VolumeX, Share2, CheckCircle2, Download, X, Sparkles, Play, Pause } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import {
   Popover,
@@ -17,7 +17,7 @@ import { useSpeech } from "@/lib/speech";
 import { getSadhanaStats, markVerseCompleted, unmarkVerseCompleted, type SadhanaStats } from "@/lib/sadhana";
 
 export default function Chapter() {
-  const { activeTextId, speak, stop, hasKannadaVoice } = useSpeech();
+  const { activeTextId, speak, stop, pauseSpeech, resumeSpeech, isPaused, activeInfo, hasKannadaVoice } = useSpeech();
   const [matchId, paramsId] = useRoute("/chapter/:id");
   const [matchVerse, paramsVerse] = useRoute("/chapter/:id/verse/:verseId");
 
@@ -364,9 +364,15 @@ export default function Chapter() {
                         type="button"
                         onClick={() => {
                           if (!hasKannadaVoice()) {
-                            speak(verse.id + "-sloka", verse.transliteration, "en");
+                            speak(verse.id + "-sloka", verse.transliteration, "en", {
+                              title: `Chapter ${chapter.id} • Verse ${verse.verse}`,
+                              subtitle: "Sanskrit Sloka Recitation"
+                            });
                           } else {
-                            speak(verse.id, verse.meaning, "kn");
+                            speak(verse.id, verse.meaning, "kn", {
+                              title: `Chapter ${chapter.id} • Verse ${verse.verse}`,
+                              subtitle: "Kannada Meaning (ಅರ್ಥ)"
+                            });
                           }
                         }}
                         className="px-3 py-1 rounded-full border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary transition-all duration-200 cursor-pointer flex items-center gap-1 text-[10px] font-sans font-bold shadow-sm hover:scale-105 active:scale-95"
@@ -378,7 +384,10 @@ export default function Chapter() {
                       
                       <button
                         type="button"
-                        onClick={() => speak(verse.id + "-sloka", verse.transliteration, "en")}
+                        onClick={() => speak(verse.id + "-sloka", verse.transliteration, "en", {
+                          title: `Chapter ${chapter.id} • Verse ${verse.verse}`,
+                          subtitle: "Sanskrit Sloka Recitation"
+                        })}
                         className="px-3 py-1 rounded-full border border-primary/20 bg-background/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all duration-200 cursor-pointer flex items-center gap-1 text-[10px] font-sans font-bold shadow-sm hover:scale-105 active:scale-95"
                         title="Listen to Sanskrit sloka transliteration in English"
                       >
@@ -618,6 +627,88 @@ export default function Chapter() {
           </div>
         </div>
       )}
+
+      {/* Floating Bottom Audio Player Bar */}
+      <AnimatePresence>
+        {activeTextId && activeInfo && (
+          <motion.div 
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-96 z-50 animate-fade-in"
+          >
+            <div className="bg-card/95 backdrop-blur-md border border-primary/20 rounded-2xl p-4 shadow-2xl flex flex-col gap-3 font-sans select-none shadow-primary/5">
+              {/* Progress Line */}
+              <div className="h-1 w-full bg-primary/10 rounded-full overflow-hidden">
+                <motion.div 
+                  className="h-full bg-gradient-to-r from-amber-500 to-orange-500"
+                  animate={{ 
+                    width: isPaused ? "50%" : ["0%", "100%"] 
+                  }}
+                  transition={{ 
+                    duration: isPaused ? 0.5 : 12, 
+                    repeat: isPaused ? 0 : Infinity, 
+                    ease: "linear" 
+                  }}
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                {/* Title info */}
+                <div className="text-left">
+                  <h4 className="text-[10px] font-extrabold text-primary uppercase tracking-wider">{activeInfo.title}</h4>
+                  <p className="text-xs font-bold text-foreground/90 line-clamp-1 mt-0.5">{activeInfo.subtitle}</p>
+                </div>
+
+                {/* Controls */}
+                <div className="flex items-center gap-2">
+                  {/* Pause / Play Toggle */}
+                  <button
+                    onClick={() => {
+                      if (isPaused) {
+                        resumeSpeech();
+                      } else {
+                        pauseSpeech();
+                      }
+                    }}
+                    className="p-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer transition-colors flex items-center justify-center h-8 w-8"
+                    aria-label={isPaused ? "Play" : "Pause"}
+                  >
+                    {isPaused ? <Play className="h-3.5 w-3.5 fill-primary" /> : <Pause className="h-3.5 w-3.5 fill-primary" />}
+                  </button>
+
+                  {/* Stop */}
+                  <button
+                    onClick={() => stop()}
+                    className="p-1.5 rounded-full bg-red-500 hover:bg-red-600 text-white cursor-pointer transition-colors flex items-center justify-center shadow h-8 w-8"
+                    title="Stop Narration"
+                  >
+                    <VolumeX className="h-3.5 w-3.5 fill-white text-white" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Equalizer Visualizer */}
+              {!isPaused && (
+                <div className="flex justify-center items-end gap-1 h-3 mt-1 pb-0.5">
+                  {[...Array(6)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="w-1 bg-amber-500 rounded-full"
+                      animate={{ height: ["4px", "12px", "4px"] }}
+                      transition={{ 
+                        duration: 0.5 + Math.random() * 0.5, 
+                        repeat: Infinity,
+                        delay: i * 0.08
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

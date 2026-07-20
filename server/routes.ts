@@ -286,11 +286,13 @@ Please use this context as the primary source for explanations. Address the seek
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
+      res.setHeader("Access-Control-Allow-Origin", "*");
       res.setHeader("Content-Type", "audio/mpeg");
       res.setHeader("Cache-Control", "public, max-age=86400");
       res.send(buffer);
     } catch (err: any) {
       console.error("[TTS Endpoint Error]:", err);
+      res.setHeader("Access-Control-Allow-Origin", "*");
       res.status(500).send("TTS Error");
     }
   });

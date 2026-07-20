@@ -3,7 +3,8 @@ import { Play, Pause, Volume2, VolumeX, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   subscribeSpeechState, 
-  updateSpeechState, 
+  stopAllGlobalAudio,
+  globalActiveAudio,
   type SpeechState 
 } from "@/lib/speech";
 
@@ -26,7 +27,6 @@ export function AudioWidget() {
     playbackRate: 1.0,
   });
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
@@ -36,49 +36,49 @@ export function AudioWidget() {
     return subscribeSpeechState(setState);
   }, []);
 
-  // Sync HTML5 Audio element with active audio state
+  // Poll time updates from globalActiveAudio
   useEffect(() => {
-    if (state.audioUrl && audioRef.current) {
-      audioRef.current.src = state.audioUrl;
-      audioRef.current.playbackRate = playbackSpeed;
-      audioRef.current.play().catch(err => {
-        console.warn("Audio playback gesture wait:", err);
-      });
+    let timer: any = null;
+    if (state.isPlaying) {
+      timer = setInterval(() => {
+        if (globalActiveAudio) {
+          setCurrentTime(globalActiveAudio.currentTime || 0);
+          setDuration(globalActiveAudio.duration || 0);
+        }
+      }, 250);
     }
-  }, [state.audioUrl]);
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [state.isPlaying]);
 
   if (!state.activeTextId) return null;
 
   const togglePlayPause = () => {
-    if (!audioRef.current) return;
-    if (audioRef.current.paused) {
-      audioRef.current.play();
-      updateSpeechState({ isPlaying: true, isPaused: false });
-    } else {
-      audioRef.current.pause();
-      updateSpeechState({ isPlaying: false, isPaused: true });
+    if (globalActiveAudio) {
+      if (globalActiveAudio.paused) {
+        globalActiveAudio.play().catch(() => {});
+      } else {
+        globalActiveAudio.pause();
+      }
+    } else if (typeof window !== "undefined" && window.speechSynthesis) {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      } else {
+        window.speechSynthesis.pause();
+      }
     }
   };
 
   const changeSpeed = (rate: number) => {
     setPlaybackSpeed(rate);
-    if (audioRef.current) {
-      audioRef.current.playbackRate = rate;
+    if (globalActiveAudio) {
+      globalActiveAudio.playbackRate = rate;
     }
   };
 
   const handleClose = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-    updateSpeechState({
-      activeTextId: null,
-      isPlaying: false,
-      isPaused: false,
-      audioUrl: null,
-      activeInfo: null,
-    });
+    stopAllGlobalAudio();
   };
 
   return (

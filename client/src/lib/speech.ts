@@ -50,14 +50,19 @@ export function subscribeSpeechState(listener: Listener) {
 
 export function stopAllGlobalAudio() {
   if (globalActiveAudio) {
-    globalActiveAudio.pause();
-    globalActiveAudio.currentTime = 0;
-    globalActiveAudio.onended = null;
-    globalActiveAudio.onerror = null;
+    try {
+      globalActiveAudio.pause();
+      globalActiveAudio.currentTime = 0;
+      globalActiveAudio.onended = null;
+      globalActiveAudio.onerror = null;
+    } catch (_) {}
     globalActiveAudio = null;
   }
+
   if (typeof window !== "undefined" && window.speechSynthesis) {
-    window.speechSynthesis.cancel();
+    try {
+      window.speechSynthesis.cancel();
+    } catch (_) {}
   }
   globalActiveUtterance = null;
 
@@ -103,61 +108,21 @@ export function cleanSlokaForSpeech(text: string): string {
     .trim();
 }
 
-function speakWebSpeechFallback(text: string, lang: "en" | "kn" | "sloka", kannadaText?: string) {
-  if (typeof window === "undefined" || !window.speechSynthesis) return;
-
-  if (window.speechSynthesis.paused) {
-    window.speechSynthesis.resume();
-  }
-  window.speechSynthesis.cancel();
-
-  const voices = window.speechSynthesis.getVoices();
-  let matchedVoice = null;
-  let textToSpeak = text;
+function getBestIndianVoice(voices: SpeechSynthesisVoice[], lang: "en" | "kn" | "sloka") {
+  if (!voices || voices.length === 0) return null;
 
   if (lang === "sloka" || lang === "kn") {
-    matchedVoice = voices.find(v => v.lang.toLowerCase().includes("kn") || v.name.toLowerCase().includes("kannada"));
-    if (!matchedVoice) {
-      matchedVoice = voices.find(v => v.lang.toLowerCase().includes("hi") || v.name.toLowerCase().includes("hindi"));
-    }
+    const knVoice = voices.find(v => v.lang.toLowerCase().includes("kn") || v.name.toLowerCase().includes("kannada"));
+    if (knVoice) return knVoice;
+
+    const hiVoice = voices.find(v => v.lang.toLowerCase().includes("hi") || v.name.toLowerCase().includes("hindi"));
+    if (hiVoice) return hiVoice;
   }
 
-  if (!matchedVoice) {
-    matchedVoice = voices.find(v => v.lang.toLowerCase().includes("en-in") || v.name.toLowerCase().includes("indian")) ||
-                   voices.find(v => v.lang.toLowerCase().startsWith("en"));
-  }
+  const indianEnVoice = voices.find(v => v.lang.toLowerCase().includes("en-in") || v.name.toLowerCase().includes("india"));
+  if (indianEnVoice) return indianEnVoice;
 
-  if (lang === "sloka" && matchedVoice && matchedVoice.lang.toLowerCase().includes("kn") && kannadaText) {
-    textToSpeak = kannadaText.replace(/\|\|/g, ",").replace(/\|/g, ",").trim();
-  } else {
-    textToSpeak = cleanSlokaForSpeech(textToSpeak);
-  }
-
-  if (!textToSpeak) return;
-
-  const utterance = new SpeechSynthesisUtterance(textToSpeak);
-  globalActiveUtterance = utterance;
-  (window as any)._activeGitaSpeechUtterance = utterance;
-
-  if (matchedVoice) {
-    utterance.voice = matchedVoice;
-    utterance.lang = matchedVoice.lang;
-  } else {
-    utterance.lang = "en-IN";
-  }
-
-  utterance.pitch = 0.92;
-  utterance.rate = 0.84;
-
-  utterance.onend = () => {
-    stopAllGlobalAudio();
-  };
-
-  utterance.onerror = () => {
-    stopAllGlobalAudio();
-  };
-
-  window.speechSynthesis.speak(utterance);
+  return voices.find(v => v.lang.toLowerCase().startsWith("en")) || voices[0] || null;
 }
 
 export function useSpeech() {
@@ -176,7 +141,7 @@ export function useSpeech() {
     info?: SpeechActiveInfo,
     kannadaScriptText?: string
   ) => {
-    // If user clicks active button, stop audio
+    // Toggle off if currently active
     if (state.activeTextId === id) {
       stopAllGlobalAudio();
       return;
@@ -185,31 +150,72 @@ export function useSpeech() {
     stopAllGlobalAudio();
 
     let targetTtsLang = "kn";
-    let rawTextToSpeak = text;
+    let textToSpeak = text;
 
     if (lang === "sloka") {
       if (kannadaScriptText) {
         targetTtsLang = "kn";
-        rawTextToSpeak = kannadaScriptText.replace(/\|\|/g, ",").replace(/\|/g, ",").replace(/ऽ/g, "").trim();
+        textToSpeak = kannadaScriptText.replace(/\|\|/g, ",").replace(/\|/g, ",").replace(/ऽ/g, "").trim();
       } else {
         targetTtsLang = "hi";
-        rawTextToSpeak = cleanSlokaForSpeech(text);
+        textToSpeak = cleanSlokaForSpeech(text);
       }
     } else if (lang === "kn") {
       targetTtsLang = "kn";
-      rawTextToSpeak = text.replace(/\|\|/g, ",").replace(/\|/g, ",").trim();
+      textToSpeak = text.replace(/\|\|/g, ",").replace(/\|/g, ",").trim();
     } else {
       targetTtsLang = "en";
-      rawTextToSpeak = cleanSlokaForSpeech(text);
+      textToSpeak = cleanSlokaForSpeech(text);
     }
 
-    const cleanSnippet = rawTextToSpeak.slice(0, 180).trim();
+    if (!textToSpeak) return;
+
+    // 1. SYNCHRONOUS PRIMARY SPEECH SYNTHESIS EXECUTION (Zero latency, gesture approved)
+    let triggeredSpeech = false;
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      try {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+        window.speechSynthesis.cancel();
+
+        const voices = window.speechSynthesis.getVoices();
+        const bestVoice = getBestIndianVoice(voices, lang);
+
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        globalActiveUtterance = utterance;
+        (window as any)._activeGitaUtterance = utterance;
+
+        if (bestVoice) {
+          utterance.voice = bestVoice;
+          utterance.lang = bestVoice.lang;
+        } else {
+          utterance.lang = targetTtsLang === "kn" ? "kn-IN" : targetTtsLang === "hi" ? "hi-IN" : "en-IN";
+        }
+
+        utterance.pitch = 0.92;
+        utterance.rate = 0.85;
+
+        utterance.onend = () => {
+          stopAllGlobalAudio();
+        };
+
+        utterance.onerror = () => {
+          stopAllGlobalAudio();
+        };
+
+        window.speechSynthesis.speak(utterance);
+        triggeredSpeech = true;
+      } catch (e) {
+        console.warn("Speech synthesis trigger failed:", e);
+      }
+    }
+
+    // 2. BACKEND /api/tts HTML5 AUDIO ATTEMPT (If backend available, stream MP3)
+    const cleanSnippet = textToSpeak.slice(0, 180).trim();
     const encodedText = encodeURIComponent(cleanSnippet);
-    
-    // Construct local /api/tts endpoint AND fallback Google TTS direct link
     const audioUrl = `/api/tts?text=${encodedText}&lang=${targetTtsLang}`;
 
-    // Create and play HTML5 Audio SYNCHRONOUSLY within user click context
     try {
       const audio = new Audio(audioUrl);
       globalActiveAudio = audio;
@@ -218,39 +224,37 @@ export function useSpeech() {
         stopAllGlobalAudio();
       };
 
-      audio.onerror = () => {
-        console.warn("HTML5 Audio stream failed, falling back to Web Speech API.");
-        speakWebSpeechFallback(text, lang, kannadaScriptText);
-      };
-
       const playPromise = audio.play();
       if (playPromise !== undefined) {
-        playPromise.catch(err => {
-          console.warn("HTML5 Audio play rejected, invoking Web Speech fallback:", err);
-          speakWebSpeechFallback(text, lang, kannadaScriptText);
+        playPromise.then(() => {
+          // MP3 backend stream succeeded! Pause Web Speech so MP3 plays cleanly
+          if (typeof window !== "undefined" && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+          }
+        }).catch(() => {
+          // MP3 failed/404, Web Speech API is already speaking seamlessly!
         });
       }
-    } catch (e) {
-      console.warn("Audio creation failed, falling back to Web Speech:", e);
-      speakWebSpeechFallback(text, lang, kannadaScriptText);
-    }
+    } catch (_) {}
 
+    // Update global state
     updateSpeechState({
       activeTextId: id,
       isPlaying: true,
       isPaused: false,
       audioUrl: audioUrl,
       activeInfo: info || null,
-      textToSpeak: rawTextToSpeak,
+      textToSpeak: textToSpeak,
       lang,
       kannadaScriptText,
     });
   };
 
   const pauseSpeech = () => {
-    if (globalActiveAudio) {
+    if (globalActiveAudio && !globalActiveAudio.paused) {
       globalActiveAudio.pause();
-    } else if (typeof window !== "undefined" && window.speechSynthesis) {
+    }
+    if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.pause();
     }
     updateSpeechState({ isPlaying: false, isPaused: true });
@@ -259,7 +263,8 @@ export function useSpeech() {
   const resumeSpeech = () => {
     if (globalActiveAudio) {
       globalActiveAudio.play().catch(() => {});
-    } else if (typeof window !== "undefined" && window.speechSynthesis) {
+    }
+    if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.resume();
     }
     updateSpeechState({ isPlaying: true, isPaused: false });
@@ -281,6 +286,7 @@ export function useSpeech() {
     speechState: state,
   };
 }
+
 
 
 

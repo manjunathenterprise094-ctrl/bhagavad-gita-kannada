@@ -182,44 +182,114 @@ export function useSpeech() {
 
     stopAllGlobalAudio();
 
+    // Clean text snippet for audio generation
+    let rawTextToSpeak = text;
+    let targetTtsLang = "kn";
+
+    if (lang === "sloka") {
+      if (kannadaScriptText) {
+        targetTtsLang = "kn";
+        rawTextToSpeak = kannadaScriptText.replace(/\|\|/g, " , ").replace(/\|/g, " , ").replace(/ऽ/g, "").trim();
+      } else {
+        targetTtsLang = "hi";
+        rawTextToSpeak = cleanSlokaForSpeech(text);
+      }
+    } else if (lang === "kn") {
+      targetTtsLang = "kn";
+      rawTextToSpeak = text.replace(/\|\|/g, " , ").replace(/\|/g, " , ").trim();
+    } else {
+      targetTtsLang = "en";
+      rawTextToSpeak = cleanSlokaForSpeech(text);
+    }
+
+    const cleanSnippet = rawTextToSpeak.slice(0, 160).trim();
+    if (!cleanSnippet) return;
+
+    const enc = encodeURIComponent(cleanSnippet);
+    
+    // MP3 Stream URLs
+    const localProxyUrl = `/api/tts?text=${enc}&lang=${targetTtsLang}`;
+    const googleDirectUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${enc}&tl=${targetTtsLang}&client=tw-ob`;
+    const corsProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(googleDirectUrl)}`;
+
+    let physicalAudioStarted = false;
+
+    // 1. SYNCHRONOUSLY CREATE UNMUTED HTML5 AUDIO INSTANCE (Preserves click gesture!)
+    try {
+      const audio = new Audio();
+      audio.volume = 1.0;
+      audio.muted = false;
+      globalActiveAudio = audio;
+
+      audio.onended = () => {
+        stopAllGlobalAudio();
+      };
+
+      // Try local proxy first, then CORS proxy
+      audio.src = localProxyUrl;
+      const playPromise = audio.play();
+
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            physicalAudioStarted = true;
+            updateSpeechState({ isPlaying: true, isPaused: false });
+          })
+          .catch(() => {
+            // Local proxy 404 (static host), switch to CORS proxy URL
+            audio.src = corsProxyUrl;
+            audio.volume = 1.0;
+            audio.muted = false;
+            
+            audio.play().then(() => {
+              physicalAudioStarted = true;
+              updateSpeechState({ isPlaying: true, isPaused: false });
+            }).catch(() => {
+              // Fallback to Web Speech API
+              if (!physicalAudioStarted) {
+                triggerWebSpeech(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText);
+              }
+            });
+          });
+      }
+    } catch (_) {
+      triggerWebSpeech(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText);
+    }
+
+    updateSpeechState({
+      activeTextId: id,
+      isPlaying: true,
+      isPaused: false,
+      audioUrl: localProxyUrl,
+      activeInfo: info || null,
+      textToSpeak: rawTextToSpeak,
+      lang,
+      kannadaScriptText,
+    });
+  };
+
+  const triggerWebSpeech = (
+    textToSpeak: string, 
+    lang: "en" | "kn" | "sloka", 
+    targetTtsLang: string, 
+    kannadaScriptText?: string
+  ) => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
 
     const { voice, isKannadaNative } = getBestIndianVoice();
+    let speechText = textToSpeak;
 
-    let textToSpeak = text;
-    let targetLangCode = "en-IN";
-
-    if (lang === "sloka") {
-      if (isKannadaNative && kannadaScriptText) {
-        textToSpeak = kannadaScriptText.replace(/\|\|/g, " , ").replace(/\|/g, " , ").replace(/ऽ/g, "").trim();
-        targetLangCode = "kn-IN";
-      } else {
-        textToSpeak = cleanSlokaForSpeech(text);
-        targetLangCode = "en-IN";
-      }
-    } else if (lang === "kn") {
-      if (isKannadaNative) {
-        textToSpeak = text.replace(/\|\|/g, " , ").replace(/\|/g, " , ").trim();
-        targetLangCode = "kn-IN";
-      } else {
-        textToSpeak = cleanSlokaForSpeech(text);
-        targetLangCode = "en-IN";
-      }
-    } else {
-      textToSpeak = cleanSlokaForSpeech(text);
-      targetLangCode = "en-IN";
+    if (!isKannadaNative) {
+      speechText = cleanSlokaForSpeech(textToSpeak);
     }
 
-    if (!textToSpeak) return;
-
-    // SYNCHRONOUS DIRECT SPEECH SYNTHESIS EXECUTION (Zero async delay, preserves click gesture!)
     try {
       if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
       }
       window.speechSynthesis.cancel();
 
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      const utterance = new SpeechSynthesisUtterance(speechText);
       globalActiveUtterance = utterance;
       (window as any)._activeGitaSpeechUtterance = utterance;
 
@@ -227,7 +297,7 @@ export function useSpeech() {
         utterance.voice = voice;
         utterance.lang = voice.lang;
       } else {
-        utterance.lang = targetLangCode;
+        utterance.lang = "en-IN";
       }
 
       utterance.pitch = 0.95;
@@ -241,30 +311,15 @@ export function useSpeech() {
         stopAllGlobalAudio();
       };
 
-      utterance.onerror = (err) => {
-        console.warn("Speech error event:", err);
-        stopAllGlobalAudio();
-      };
-
       window.speechSynthesis.resume();
       window.speechSynthesis.speak(utterance);
-
-      updateSpeechState({
-        activeTextId: id,
-        isPlaying: true,
-        isPaused: false,
-        audioUrl: null,
-        activeInfo: info || null,
-        textToSpeak: textToSpeak,
-        lang,
-        kannadaScriptText,
-      });
-    } catch (e) {
-      console.warn("Speech trigger error:", e);
-    }
+    } catch (_) {}
   };
 
   const pauseSpeech = () => {
+    if (globalActiveAudio && !globalActiveAudio.paused) {
+      globalActiveAudio.pause();
+    }
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.pause();
     }
@@ -272,6 +327,9 @@ export function useSpeech() {
   };
 
   const resumeSpeech = () => {
+    if (globalActiveAudio) {
+      globalActiveAudio.play().catch(() => {});
+    }
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.resume();
     }
@@ -294,9 +352,3 @@ export function useSpeech() {
     speechState: state,
   };
 }
-
-
-
-
-
-

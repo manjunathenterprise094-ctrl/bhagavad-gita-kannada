@@ -161,57 +161,75 @@ export default function Storybook() {
       return;
     }
 
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
     window.speechSynthesis.cancel();
     
     const voices = window.speechSynthesis.getVoices();
-    let matchedVoice = null;
+    let matchedVoice: SpeechSynthesisVoice | null = null;
     let textToSpeak = text;
     let activeLang = lang;
 
     if (lang === "kn") {
-      matchedVoice = voices.find(v => 
-        v.lang.toLowerCase().includes("kn") || v.lang.toLowerCase().includes("kannada")
-      );
+      matchedVoice = voices.find(v => {
+        const l = v.lang.toLowerCase();
+        const n = v.name.toLowerCase();
+        return l.includes("kn") || n.includes("kannada");
+      }) || null;
+
       if (!matchedVoice) {
-        console.warn("No Kannada voice found on this device, falling back to English narration.");
-        activeLang = "en";
-        textToSpeak = activeScene.englishText;
+        // Fallback to Hindi voice if available for Indian accent, otherwise English
+        const hiVoice = voices.find(v => v.lang.toLowerCase().includes("hi"));
+        if (hiVoice) {
+          matchedVoice = hiVoice;
+        } else {
+          activeLang = "en";
+          textToSpeak = activeScene.englishText;
+        }
       }
     }
 
     if (activeLang === "en") {
-      // 1. Try to find Indian English (en-IN) voices
-      const enInVoices = voices.filter(v => v.lang.toLowerCase().includes("en-in"));
+      // 1. Try Indian English (en-IN) voices
+      const enInVoices = voices.filter(v => {
+        const l = v.lang.toLowerCase();
+        const n = v.name.toLowerCase();
+        return l.includes("en-in") || l.includes("en_in") || n.includes("india") || n.includes("indian") || n.includes("rishi") || n.includes("veena") || n.includes("sangeeta") || n.includes("ravi") || n.includes("heera");
+      });
+
       if (enInVoices.length > 0) {
-        matchedVoice = enInVoices.find(v => 
-          v.name.toLowerCase().includes("ravi") || 
-          v.name.toLowerCase().includes("male") || 
-          v.name.toLowerCase().includes("heera")
-        ) || enInVoices[0];
+        matchedVoice = enInVoices[0];
       }
       
-      // 2. Fallback to general warm/deep English voices if no Indian English voice is installed
+      // 2. Fallback to general warm English voices
       if (!matchedVoice) {
         const voicePreferences = ["male", "david", "google us male", "natural", "en-us"];
         for (const pref of voicePreferences) {
           matchedVoice = voices.find(v => 
             v.lang.toLowerCase().startsWith("en") && 
             v.name.toLowerCase().includes(pref)
-          );
+          ) || null;
           if (matchedVoice) break;
         }
       }
       
       // 3. Absolute fallback
       if (!matchedVoice) {
-        matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith("en"));
+        matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith("en")) || null;
       }
     }
 
     const cleanText = textToSpeak.replace(/[*#_~`[\]()]/g, "").trim();
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = activeLang === "kn" ? "kn-IN" : "en-US";
-    if (matchedVoice) utterance.voice = matchedVoice;
+    (window as any)._activeStorybookUtterance = utterance;
+
+    if (matchedVoice) {
+      utterance.voice = matchedVoice;
+      utterance.lang = matchedVoice.lang;
+    } else {
+      utterance.lang = "en-IN";
+    }
 
     utterance.pitch = 0.88; // Deep, resonant, warm tone
     utterance.rate = 0.82;  // Slow, comforting pace
@@ -232,7 +250,11 @@ export default function Storybook() {
     };
 
     setActiveSpeech(true);
-    window.speechSynthesis.speak(utterance);
+    setTimeout(() => {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.speak(utterance);
+      }
+    }, 10);
   };
 
   const handleNarrationEnded = () => {

@@ -379,17 +379,16 @@ export default function Chapter() {
                       <button
                         type="button"
                         onClick={() => {
-                          if (!hasKannadaVoice()) {
-                            speak(verse.id + "-sloka", verse.transliteration, "en", {
+                          speak(
+                            verse.id + "-sloka",
+                            verse.transliteration,
+                            "sloka",
+                            {
                               title: `Chapter ${chapter.id} • Verse ${verse.verse}`,
                               subtitle: "Sanskrit Sloka Recitation"
-                            });
-                          } else {
-                            speak(verse.id + "-sloka", verse.kannada, "kn", {
-                              title: `Chapter ${chapter.id} • Verse ${verse.verse}`,
-                              subtitle: "Sanskrit Sloka Recitation"
-                            });
-                          }
+                            },
+                            verse.kannada
+                          );
                         }}
                         className="px-3 py-1 rounded-full border border-primary/20 bg-background/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all duration-200 cursor-pointer flex items-center gap-1 text-[10px] font-sans font-bold shadow-sm hover:scale-105 active:scale-95"
                         title="Listen to Sanskrit sloka"

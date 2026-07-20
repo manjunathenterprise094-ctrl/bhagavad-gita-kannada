@@ -1301,10 +1301,19 @@ export default function Home() {
 
                       <button 
                         type="button"
-                        onClick={() => speak("guidance", guidanceVerse.meaning, "kn")}
+                        onClick={() => speak(
+                          "guidance-meaning", 
+                          guidanceVerse.meaning, 
+                          "kn",
+                          {
+                            title: `Chapter ${guidanceVerse.chapterId} • Verse ${guidanceVerse.verse}`,
+                            subtitle: "Kannada Meaning"
+                          }
+                        )}
                         className="px-2 py-1 bg-primary/15 hover:bg-primary/25 text-primary rounded-lg text-[9px] transition-colors cursor-pointer font-bold border border-primary/20 flex items-center gap-1"
+                        title="Listen Meaning"
                       >
-                        {activeTextId === "guidance" ? (
+                        {activeTextId === "guidance-meaning" ? (
                           <>
                             <VolumeX className="h-3 w-3 text-red-500 animate-pulse" />
                             <span>Stop</span>
@@ -1312,7 +1321,35 @@ export default function Home() {
                         ) : (
                           <>
                             <Volume2 className="h-3 w-3" />
-                            <span>Listen</span>
+                            <span>Meaning</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button 
+                        type="button"
+                        onClick={() => speak(
+                          "guidance-sloka", 
+                          guidanceVerse.transliteration, 
+                          "sloka", 
+                          {
+                            title: `Chapter ${guidanceVerse.chapterId} • Verse ${guidanceVerse.verse}`,
+                            subtitle: "Sanskrit Sloka Recitation"
+                          },
+                          guidanceVerse.kannada
+                        )}
+                        className="px-2 py-1 bg-primary/15 hover:bg-primary/25 text-primary rounded-lg text-[9px] transition-colors cursor-pointer font-bold border border-primary/20 flex items-center gap-1"
+                        title="Listen Sloka"
+                      >
+                        {activeTextId === "guidance-sloka" ? (
+                          <>
+                            <VolumeX className="h-3 w-3 text-amber-500 animate-pulse" />
+                            <span>Stop Sloka</span>
+                          </>
+                        ) : (
+                          <>
+                            <Volume2 className="h-3 w-3" strokeWidth={2.5} />
+                            <span>Sloka</span>
                           </>
                         )}
                       </button>

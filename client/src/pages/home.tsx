@@ -1228,7 +1228,6 @@ export default function Home() {
 
       {/* Interactive Hub Section (Guidance & Quiz) */}
       <section className="py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto relative z-10 text-center font-sans grid grid-cols-1 md:grid-cols-2 gap-8">
-        
         {/* Divine Guidance Widget (Shloka Roulette) */}
         <motion.div 
           className="p-6 md:p-8 rounded-3xl bg-card/75 backdrop-blur-sm border-2 border-primary/20 shadow-2xl relative overflow-hidden text-center flex flex-col justify-between cursor-default transition-colors duration-300"
@@ -1247,7 +1246,7 @@ export default function Home() {
               <Sparkles className="h-4 w-4 text-primary animate-pulse" />
               Divine Guidance • ದೈವೀ ಮಾರ್ಗದರ್ಶನ
             </h3>
-            
+
             {guidanceVerse ? (
               <AnimatePresence mode="wait">
                 <motion.div 

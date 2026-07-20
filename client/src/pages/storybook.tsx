@@ -123,36 +123,31 @@ export default function Storybook() {
     ignoreSpeechEndRef.current = false;
 
     const scene = GITA_SCENES[index];
+    
+    // Trigger Speech Synthesis synchronously within the user gesture context
+    triggerSpeechSynthesis(scene.kannadaText, "kn");
+
+    // Also attempt MP3 file if present
     const audioUrl = `/audio/storybook/scene_${scene.id + 1}.mp3`;
-    const audio = new Audio(audioUrl);
-    voiceAudioRef.current = audio;
+    try {
+      const audio = new Audio(audioUrl);
+      voiceAudioRef.current = audio;
 
-    let fallbackTriggered = false;
-    const triggerFallback = () => {
-      if (fallbackTriggered) return;
-      fallbackTriggered = true;
-      voiceAudioRef.current = null;
-      triggerSpeechSynthesis(scene.kannadaText, "kn");
-    };
+      audio.onended = () => {
+        voiceAudioRef.current = null;
+        handleNarrationEnded();
+      };
 
-    audio.onerror = () => {
-      console.log(`Voiceover MP3 for scene ${scene.id + 1} not found, playing TTS...`);
-      triggerFallback();
-    };
-
-    audio.onended = () => {
-      voiceAudioRef.current = null;
-      handleNarrationEnded();
-    };
-
-    audio.onplay = () => {
-      setActiveSpeech(true);
-    };
-
-    audio.play().catch((err) => {
-      console.warn("Audio play blocked, using TTS fallback:", err);
-      triggerFallback();
-    });
+      audio.play().then(() => {
+        // MP3 file exists and played! Stop speech synthesis so MP3 plays cleanly
+        if (typeof window !== "undefined" && window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+        }
+        setActiveSpeech(true);
+      }).catch(() => {
+        // MP3 missing, Speech Synthesis is already speaking synchronously!
+      });
+    } catch (_) {}
   };
 
   const triggerSpeechSynthesis = (text: string, lang: "kn" | "en") => {

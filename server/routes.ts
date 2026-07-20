@@ -255,6 +255,46 @@ Please use this context as the primary source for explanations. Address the seek
     });
   });
 
+  // GET /api/tts?text=...&lang=... — Stream Google TTS MP3 audio for HTML5 audio player
+  app.get("/api/tts", async (req, res) => {
+    try {
+      const text = String(req.query.text || "").trim();
+      const lang = String(req.query.lang || "kn").trim();
+      if (!text) {
+        return res.status(400).send("Text parameter required.");
+      }
+
+      const cleanText = text
+        .replace(/[*#_~`[\]()]/g, "")
+        .replace(/https?:\/\/\S+/g, "")
+        .trim();
+
+      const encodedText = encodeURIComponent(cleanText.slice(0, 200));
+      const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=${lang}&client=tw-ob`;
+
+      const response = await fetch(googleTtsUrl, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+          "Referer": "https://translate.google.com/",
+        },
+      });
+
+      if (!response.ok) {
+        return res.status(500).send("TTS Upstream Failed");
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      res.setHeader("Content-Type", "audio/mpeg");
+      res.setHeader("Cache-Control", "public, max-age=86400");
+      res.send(buffer);
+    } catch (err: any) {
+      console.error("[TTS Endpoint Error]:", err);
+      res.status(500).send("TTS Error");
+    }
+  });
+
   return httpServer;
 }
 

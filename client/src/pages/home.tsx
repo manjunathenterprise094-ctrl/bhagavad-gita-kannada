@@ -12,7 +12,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { updateMetaTags, updateSchemaOrg } from "@/lib/seo";
 import Navbar from "@/components/Navbar";
-import { useSpeech } from "@/lib/speech";
+import { useSpeech, FixedAudioPlayerWidget } from "@/lib/speech";
 import { getSadhanaStats, type SadhanaStats } from "@/lib/sadhana";
 
 // Global Audio Singleton for continuous playback across pages
@@ -218,10 +218,8 @@ export function ParticlesBackdrop() {
   );
 }
 
-// 3. Audio Player Component
-export function AudioWidget() {
-  return null;
-}
+import { AudioWidget } from "@/components/AudioWidget";
+export { AudioWidget };
 
 // 4. Mobile Nav Drawer Menu Component
 interface MobileNavProps {

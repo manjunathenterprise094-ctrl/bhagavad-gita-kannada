@@ -202,7 +202,7 @@ export function useSpeech() {
       rawTextToSpeak = cleanSlokaForSpeech(text);
     }
 
-    if (!textToSpeak) return;
+    if (!rawTextToSpeak) return;
 
     // Direct synchronous speech execution
     triggerWebSpeech(text, lang, targetTtsLang, kannadaScriptText);

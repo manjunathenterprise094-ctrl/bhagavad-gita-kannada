@@ -14,6 +14,7 @@ import {
 import { updateMetaTags } from "@/lib/seo";
 import Navbar from "@/components/Navbar";
 import { useSpeech } from "@/lib/speech";
+import { TileAudioPlayer } from "@/components/TileAudioPlayer";
 
 interface BookmarkedVerseDetail {
   id: string; // "chapter-verse" (e.g. "1-1")
@@ -228,6 +229,16 @@ export default function Bookmarks() {
                   {v.meaning}
                 </p>
               </div>
+
+              {/* Embedded Hardcoded Audio Player Tile */}
+              <TileAudioPlayer
+                id={v.id}
+                verseNum={v.verse}
+                chapterNum={v.chapterId}
+                slokaText={v.transliteration}
+                meaningText={v.meaning}
+                kannadaSlokaText={v.kannada}
+              />
             </motion.div>
           ))}
         </AnimatePresence>

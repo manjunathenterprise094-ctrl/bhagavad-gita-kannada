@@ -17,6 +17,7 @@ import Navbar from "@/components/Navbar";
 import { cn } from "@/lib/utils";
 import { getSadhanaStats, markVerseCompleted, unmarkVerseCompleted, type SadhanaStats } from "@/lib/sadhana";
 import { useSpeech } from "@/lib/speech";
+import { TileAudioPlayer } from "@/components/TileAudioPlayer";
 
 export default function Verses() {
   const [selectedChapterId, setSelectedChapterId] = useState<number>(1);
@@ -415,6 +416,16 @@ export default function Verses() {
                 {verse.meaning}
               </p>
             </div>
+
+            {/* Embedded Hardcoded Audio Player Tile */}
+            <TileAudioPlayer
+              id={verse.id}
+              verseNum={verse.verse}
+              chapterNum={selectedChapterId}
+              slokaText={verse.transliteration}
+              meaningText={verse.meaning}
+              kannadaSlokaText={verse.kannada}
+            />
           </div>
         ))}
 

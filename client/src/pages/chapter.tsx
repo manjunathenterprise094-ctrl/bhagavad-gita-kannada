@@ -15,6 +15,7 @@ import { ProgressBar, ParticlesBackdrop, AudioWidget, MobileNavDrawer, FloatingC
 import Navbar from "@/components/Navbar";
 import { updateMetaTags, updateSchemaOrg } from "@/lib/seo";
 import { useSpeech } from "@/lib/speech";
+import { TileAudioPlayer } from "@/components/TileAudioPlayer";
 import { getSadhanaStats, markVerseCompleted, unmarkVerseCompleted, type SadhanaStats } from "@/lib/sadhana";
 
 export default function Chapter() {
@@ -469,6 +470,16 @@ export default function Chapter() {
                   {verse.meaning}
                 </p>
               </div>
+
+              {/* Embedded Hardcoded Audio Player Tile */}
+              <TileAudioPlayer
+                id={verse.id}
+                verseNum={verse.verse}
+                chapterNum={chapter.id}
+                slokaText={verse.transliteration}
+                meaningText={verse.meaning}
+                kannadaSlokaText={verse.kannada}
+              />
             </div>
           </div>
         ))}

@@ -138,66 +138,6 @@ export default function Bookmarks() {
                   <BookOpen className="h-3.5 w-3.5" />
                   Chapter {v.chapterId}.{v.verseNumber} • {v.chapterTitle}
                 </Link>
-                <div className="flex items-center gap-1.5 ml-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      speak(
-                        v.id + "-meaning",
-                        v.meaning,
-                        "kn",
-                        {
-                          title: `Chapter ${v.chapterId} • Verse ${v.verseNumber}`,
-                          subtitle: "Kannada Meaning (ಅರ್ಥ)"
-                        }
-                      );
-                    }}
-                    className="px-2 py-0.5 rounded-full border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary transition-all duration-200 cursor-pointer flex items-center gap-1 text-[10px] font-sans font-bold shadow-sm"
-                    title="Listen to Kannada meaning"
-                  >
-                    {activeTextId === v.id + "-meaning" ? (
-                      <>
-                        <VolumeX className="h-3 w-3 text-red-500 animate-pulse" />
-                        <span>Stop</span>
-                      </>
-                    ) : (
-                      <>
-                        <Volume2 className="h-3 w-3" />
-                        <span>Meaning</span>
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      speak(
-                        v.id + "-sloka",
-                        v.transliteration,
-                        "sloka",
-                        {
-                          title: `Chapter ${v.chapterId} • Verse ${v.verseNumber}`,
-                          subtitle: "Sanskrit Sloka Recitation"
-                        },
-                        v.kannada
-                      );
-                    }}
-                    className="px-2 py-0.5 rounded-full border border-primary/20 bg-background/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all duration-200 cursor-pointer flex items-center gap-1 text-[10px] font-sans font-bold shadow-sm"
-                    title="Listen to Sanskrit sloka"
-                  >
-                    {activeTextId === v.id + "-sloka" ? (
-                      <>
-                        <VolumeX className="h-3 w-3 text-amber-500 animate-pulse" />
-                        <span>Stop Sloka</span>
-                      </>
-                    ) : (
-                      <>
-                        <Volume2 className="h-3 w-3" strokeWidth={2.5} />
-                        <span>Sloka</span>
-                      </>
-                    )}
-                  </button>
-                </div>
 
                 <Button
                   variant="ghost"

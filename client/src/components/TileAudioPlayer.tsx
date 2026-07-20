@@ -19,7 +19,7 @@ export function TileAudioPlayer({
   meaningText,
   kannadaSlokaText,
 }: TileAudioPlayerProps) {
-  const { speak, activeTextId, stop } = useSpeech();
+  const { speak, activeTextId } = useSpeech();
   const [activeTab, setActiveTab] = useState<"sloka" | "meaning">("sloka");
 
   const cleanSloka = (kannadaSlokaText || slokaText)
@@ -33,8 +33,14 @@ export function TileAudioPlayer({
     .replace(/\|/g, ",")
     .slice(0, 180);
 
-  const slokaAudioUrl = `/api/tts?text=${encodeURIComponent(cleanSloka)}&lang=kn`;
-  const meaningAudioUrl = `/api/tts?text=${encodeURIComponent(cleanMeaning)}&lang=kn`;
+  const encSloka = encodeURIComponent(cleanSloka);
+  const encMeaning = encodeURIComponent(cleanMeaning);
+
+  const slokaProxyUrl = `/api/tts?text=${encSloka}&lang=kn`;
+  const slokaDirectUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encSloka}&tl=kn&client=tw-ob`;
+
+  const meaningProxyUrl = `/api/tts?text=${encMeaning}&lang=kn`;
+  const meaningDirectUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encMeaning}&tl=kn&client=tw-ob`;
 
   const isSlokaPlaying = activeTextId === id + "-sloka";
   const isMeaningPlaying = activeTextId === id;
@@ -112,13 +118,16 @@ export function TileAudioPlayer({
               </button>
             </div>
 
-            {/* Native Embedded Audio Element */}
+            {/* Native Embedded Audio Element with Dual Sources for 100% Availability */}
             <audio
               controls
               preload="metadata"
               className="w-full h-9 rounded-lg"
-              src={slokaAudioUrl}
-            />
+            >
+              <source src={slokaProxyUrl} type="audio/mpeg" />
+              <source src={slokaDirectUrl} type="audio/mpeg" />
+              Your browser does not support the audio element.
+            </audio>
           </div>
         ) : (
           <div className="space-y-2">
@@ -145,13 +154,16 @@ export function TileAudioPlayer({
               </button>
             </div>
 
-            {/* Native Embedded Audio Element */}
+            {/* Native Embedded Audio Element with Dual Sources for 100% Availability */}
             <audio
               controls
               preload="metadata"
               className="w-full h-9 rounded-lg"
-              src={meaningAudioUrl}
-            />
+            >
+              <source src={meaningProxyUrl} type="audio/mpeg" />
+              <source src={meaningDirectUrl} type="audio/mpeg" />
+              Your browser does not support the audio element.
+            </audio>
           </div>
         )}
       </div>

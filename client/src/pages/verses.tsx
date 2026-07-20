@@ -322,68 +322,6 @@ export default function Verses() {
                   <Share2 className="h-4.5 w-4.5" />
                 </Button>
 
-                {/* Speech Buttons */}
-                <div className="flex items-center gap-1.5 ml-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      speak(
-                        verse.id + "-meaning",
-                        verse.meaning,
-                        "kn",
-                        {
-                          title: `Chapter ${selectedChapterId} • Verse ${verse.verse}`,
-                          subtitle: "Kannada Meaning (ಅರ್ಥ)"
-                        }
-                      );
-                    }}
-                    className="px-2 py-0.5 rounded-full border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary transition-all duration-200 cursor-pointer flex items-center gap-1 text-[10px] font-sans font-bold shadow-sm"
-                    title="Listen to Kannada meaning"
-                  >
-                    {activeTextId === verse.id + "-meaning" ? (
-                      <>
-                        <VolumeX className="h-3 w-3 text-red-500 animate-pulse" />
-                        <span>Stop</span>
-                      </>
-                    ) : (
-                      <>
-                        <Volume2 className="h-3 w-3" />
-                        <span>Meaning</span>
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      speak(
-                        verse.id + "-sloka",
-                        verse.transliteration,
-                        "sloka",
-                        {
-                          title: `Chapter ${selectedChapterId} • Verse ${verse.verse}`,
-                          subtitle: "Sanskrit Sloka Recitation"
-                        },
-                        verse.kannada
-                      );
-                    }}
-                    className="px-2 py-0.5 rounded-full border border-primary/20 bg-background/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all duration-200 cursor-pointer flex items-center gap-1 text-[10px] font-sans font-bold shadow-sm"
-                    title="Listen to Sanskrit sloka"
-                  >
-                    {activeTextId === verse.id + "-sloka" ? (
-                      <>
-                        <VolumeX className="h-3 w-3 text-amber-500 animate-pulse" />
-                        <span>Stop Sloka</span>
-                      </>
-                    ) : (
-                      <>
-                        <Volume2 className="h-3 w-3" strokeWidth={2.5} />
-                        <span>Sloka</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-
                 {/* Bookmark Button */}
                 <Button
                   variant="ghost"

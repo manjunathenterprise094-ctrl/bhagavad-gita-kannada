@@ -182,143 +182,44 @@ export function useSpeech() {
 
     stopAllGlobalAudio();
 
-    let targetTtsLang = "kn";
-    let rawTextToSpeak = text;
-
-    if (lang === "sloka") {
-      if (kannadaScriptText) {
-        targetTtsLang = "kn";
-        rawTextToSpeak = kannadaScriptText.replace(/\|\|/g, " , ").replace(/\|/g, " , ").replace(/ऽ/g, "").trim();
-      } else {
-        targetTtsLang = "hi";
-        rawTextToSpeak = cleanSlokaForSpeech(text);
-      }
-    } else if (lang === "kn") {
-      targetTtsLang = "kn";
-      rawTextToSpeak = text.replace(/\|\|/g, " , ").replace(/\|/g, " , ").trim();
-    } else {
-      targetTtsLang = "en";
-      rawTextToSpeak = cleanSlokaForSpeech(text);
-    }
-
-    const cleanSnippet = rawTextToSpeak.slice(0, 180).trim();
-    if (!cleanSnippet) return;
-
-    const encodedText = encodeURIComponent(cleanSnippet);
-    
-    // MP3 Stream Sources
-    const proxyUrl = `/api/tts?text=${encodedText}&lang=${targetTtsLang}`;
-    const directUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=${targetTtsLang}&client=tw-ob`;
-    const corsProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(directUrl)}`;
-
-    let physicalAudioPlayed = false;
-
-    // 1. PHYSICAL HTML5 MP3 AUDIO ENGINE WITH BLOB MEMORY & UNMUTED LOUDSPEAKER
-    try {
-      const audio = new Audio();
-      audio.volume = 1.0;
-      audio.muted = false;
-      globalActiveAudio = audio;
-
-      audio.onended = () => {
-        stopAllGlobalAudio();
-      };
-
-      const tryPlaySource = (urlIndex: number) => {
-        const urls = [proxyUrl, directUrl, corsProxyUrl];
-        if (urlIndex >= urls.length) {
-          if (!physicalAudioPlayed) {
-            triggerWebSpeechFallback(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText);
-          }
-          return;
-        }
-
-        const targetUrl = urls[urlIndex];
-
-        // Fetch as Blob for local memory playback
-        fetch(targetUrl)
-          .then((res) => {
-            if (!res.ok) throw new Error("HTTP error " + res.status);
-            return res.blob();
-          })
-          .then((blob) => {
-            const objectUrl = URL.createObjectURL(blob);
-            audio.src = objectUrl;
-            audio.volume = 1.0;
-            audio.muted = false;
-
-            const promise = audio.play();
-            if (promise !== undefined) {
-              promise
-                .then(() => {
-                  physicalAudioPlayed = true;
-                  updateSpeechState({ isPlaying: true, isPaused: false });
-                })
-                .catch(() => {
-                  tryPlaySource(urlIndex + 1);
-                });
-            }
-          })
-          .catch(() => {
-            // Direct audio src fallback
-            audio.src = targetUrl;
-            audio.volume = 1.0;
-            audio.muted = false;
-
-            const promise = audio.play();
-            if (promise !== undefined) {
-              promise
-                .then(() => {
-                  physicalAudioPlayed = true;
-                  updateSpeechState({ isPlaying: true, isPaused: false });
-                })
-                .catch(() => {
-                  tryPlaySource(urlIndex + 1);
-                });
-            }
-          });
-      };
-
-      tryPlaySource(0);
-    } catch (_) {
-      triggerWebSpeechFallback(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText);
-    }
-
-    // Update state
-    updateSpeechState({
-      activeTextId: id,
-      isPlaying: true,
-      isPaused: false,
-      audioUrl: proxyUrl,
-      activeInfo: info || null,
-      textToSpeak: rawTextToSpeak,
-      lang,
-      kannadaScriptText,
-    });
-  };
-
-  const triggerWebSpeechFallback = (
-    textToSpeak: string, 
-    lang: "en" | "kn" | "sloka", 
-    targetTtsLang: string, 
-    kannadaScriptText?: string
-  ) => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
 
     const { voice, isKannadaNative } = getBestIndianVoice();
-    let speechText = textToSpeak;
 
-    if (!isKannadaNative) {
-      speechText = cleanSlokaForSpeech(textToSpeak);
+    let textToSpeak = text;
+    let targetLangCode = "en-IN";
+
+    if (lang === "sloka") {
+      if (isKannadaNative && kannadaScriptText) {
+        textToSpeak = kannadaScriptText.replace(/\|\|/g, " , ").replace(/\|/g, " , ").replace(/ऽ/g, "").trim();
+        targetLangCode = "kn-IN";
+      } else {
+        textToSpeak = cleanSlokaForSpeech(text);
+        targetLangCode = "en-IN";
+      }
+    } else if (lang === "kn") {
+      if (isKannadaNative) {
+        textToSpeak = text.replace(/\|\|/g, " , ").replace(/\|/g, " , ").trim();
+        targetLangCode = "kn-IN";
+      } else {
+        textToSpeak = cleanSlokaForSpeech(text);
+        targetLangCode = "en-IN";
+      }
+    } else {
+      textToSpeak = cleanSlokaForSpeech(text);
+      targetLangCode = "en-IN";
     }
 
+    if (!textToSpeak) return;
+
+    // SYNCHRONOUS DIRECT SPEECH SYNTHESIS EXECUTION (Zero async delay, preserves click gesture!)
     try {
       if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
       }
       window.speechSynthesis.cancel();
 
-      const utterance = new SpeechSynthesisUtterance(speechText);
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
       globalActiveUtterance = utterance;
       (window as any)._activeGitaSpeechUtterance = utterance;
 
@@ -326,7 +227,7 @@ export function useSpeech() {
         utterance.voice = voice;
         utterance.lang = voice.lang;
       } else {
-        utterance.lang = "en-IN";
+        utterance.lang = targetLangCode;
       }
 
       utterance.pitch = 0.95;
@@ -340,9 +241,27 @@ export function useSpeech() {
         stopAllGlobalAudio();
       };
 
+      utterance.onerror = (err) => {
+        console.warn("Speech error event:", err);
+        stopAllGlobalAudio();
+      };
+
       window.speechSynthesis.resume();
       window.speechSynthesis.speak(utterance);
-    } catch (_) {}
+
+      updateSpeechState({
+        activeTextId: id,
+        isPlaying: true,
+        isPaused: false,
+        audioUrl: null,
+        activeInfo: info || null,
+        textToSpeak: textToSpeak,
+        lang,
+        kannadaScriptText,
+      });
+    } catch (e) {
+      console.warn("Speech trigger error:", e);
+    }
   };
 
   const pauseSpeech = () => {

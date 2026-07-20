@@ -202,16 +202,65 @@ export function useSpeech() {
       rawTextToSpeak = cleanSlokaForSpeech(text);
     }
 
-    if (!rawTextToSpeak) return;
+    const cleanSnippet = rawTextToSpeak.slice(0, 160).trim();
+    if (!cleanSnippet) return;
 
-    // Direct synchronous speech execution
-    triggerWebSpeech(text, lang, targetTtsLang, kannadaScriptText);
+    const enc = encodeURIComponent(cleanSnippet);
+    
+    // MP3 Stream URLs
+    const localProxyUrl = `/api/tts?text=${enc}&lang=${targetTtsLang}`;
+    const googleDirectUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${enc}&tl=${targetTtsLang}&client=tw-ob`;
+    const corsProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(googleDirectUrl)}`;
+
+    let physicalAudioStarted = false;
+
+    // 1. SYNCHRONOUSLY CREATE UNMUTED HTML5 AUDIO INSTANCE (Preserves click gesture!)
+    try {
+      const audio = new Audio();
+      audio.volume = 1.0;
+      audio.muted = false;
+      globalActiveAudio = audio;
+
+      audio.onended = () => {
+        stopAllGlobalAudio();
+      };
+
+      // Try local proxy first, then CORS proxy
+      audio.src = localProxyUrl;
+      const playPromise = audio.play();
+
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            physicalAudioStarted = true;
+            updateSpeechState({ isPlaying: true, isPaused: false });
+          })
+          .catch(() => {
+            // Local proxy 404 (static host), switch to CORS proxy URL
+            audio.src = corsProxyUrl;
+            audio.volume = 1.0;
+            audio.muted = false;
+            
+            audio.play().then(() => {
+              physicalAudioStarted = true;
+              updateSpeechState({ isPlaying: true, isPaused: false });
+            }).catch(() => {
+              // Fallback to Web Speech API
+              if (!physicalAudioStarted) {
+                triggerWebSpeech(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText);
+              }
+            });
+          });
+      }
+    } catch (_) {
+      triggerWebSpeech(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText);
+    }
 
     updateSpeechState({
       activeTextId: id,
       isPlaying: true,
       isPaused: false,
-      audioUrl: null,
+      audioUrl: localProxyUrl,
       activeInfo: info || null,
       textToSpeak: rawTextToSpeak,
       lang,
@@ -228,26 +277,11 @@ export function useSpeech() {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
 
     const { voice, isKannadaNative } = getBestIndianVoice();
-    let speechText = "";
+    let speechText = textToSpeak;
 
-    if (lang === "sloka") {
-      if (isKannadaNative && kannadaScriptText) {
-        speechText = kannadaScriptText.replace(/\|\|/g, " , ").replace(/\|/g, " , ").replace(/ऽ/g, "").trim();
-      } else {
-        // Use Sanskrit Romanized Transliteration for English/Indian voice
-        speechText = cleanSlokaForSpeech(textToSpeak);
-      }
-    } else if (lang === "kn") {
-      if (isKannadaNative) {
-        speechText = textToSpeak.replace(/\|\|/g, " , ").replace(/\|/g, " , ").trim();
-      } else {
-        speechText = cleanSlokaForSpeech(textToSpeak);
-      }
-    } else {
+    if (!isKannadaNative) {
       speechText = cleanSlokaForSpeech(textToSpeak);
     }
-
-    if (!speechText) return;
 
     try {
       if (window.speechSynthesis.paused) {
@@ -267,7 +301,7 @@ export function useSpeech() {
       }
 
       utterance.pitch = 0.95;
-      utterance.rate = 0.82;
+      utterance.rate = 0.85;
 
       utterance.onstart = () => {
         updateSpeechState({ isPlaying: true, isPaused: false });
@@ -277,16 +311,9 @@ export function useSpeech() {
         stopAllGlobalAudio();
       };
 
-      utterance.onerror = (err) => {
-        console.warn("Speech synthesis error event:", err);
-        stopAllGlobalAudio();
-      };
-
       window.speechSynthesis.resume();
       window.speechSynthesis.speak(utterance);
-    } catch (e) {
-      console.warn("Speech synthesis trigger error:", e);
-    }
+    } catch (_) {}
   };
 
   const pauseSpeech = () => {

@@ -213,9 +213,11 @@ export function useSpeech() {
 
     let physicalAudioPlayed = false;
 
-    // 1. PHYSICAL HTML5 MP3 AUDIO ENGINE (Synchronous gesture creation)
+    // 1. PHYSICAL HTML5 MP3 AUDIO ENGINE WITH BLOB MEMORY & UNMUTED LOUDSPEAKER
     try {
       const audio = new Audio();
+      audio.volume = 1.0;
+      audio.muted = false;
       globalActiveAudio = audio;
 
       audio.onended = () => {
@@ -225,24 +227,56 @@ export function useSpeech() {
       const tryPlaySource = (urlIndex: number) => {
         const urls = [proxyUrl, directUrl, corsProxyUrl];
         if (urlIndex >= urls.length) {
-          // If all physical MP3 streams failed, trigger Web Speech Synthesis
           if (!physicalAudioPlayed) {
             triggerWebSpeechFallback(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText);
           }
           return;
         }
 
-        audio.src = urls[urlIndex];
-        const promise = audio.play();
-        if (promise !== undefined) {
-          promise.then(() => {
-            physicalAudioPlayed = true;
-            updateSpeechState({ isPlaying: true, isPaused: false });
-          }).catch(() => {
-            // Next URL fallback
-            tryPlaySource(urlIndex + 1);
+        const targetUrl = urls[urlIndex];
+
+        // Fetch as Blob for local memory playback
+        fetch(targetUrl)
+          .then((res) => {
+            if (!res.ok) throw new Error("HTTP error " + res.status);
+            return res.blob();
+          })
+          .then((blob) => {
+            const objectUrl = URL.createObjectURL(blob);
+            audio.src = objectUrl;
+            audio.volume = 1.0;
+            audio.muted = false;
+
+            const promise = audio.play();
+            if (promise !== undefined) {
+              promise
+                .then(() => {
+                  physicalAudioPlayed = true;
+                  updateSpeechState({ isPlaying: true, isPaused: false });
+                })
+                .catch(() => {
+                  tryPlaySource(urlIndex + 1);
+                });
+            }
+          })
+          .catch(() => {
+            // Direct audio src fallback
+            audio.src = targetUrl;
+            audio.volume = 1.0;
+            audio.muted = false;
+
+            const promise = audio.play();
+            if (promise !== undefined) {
+              promise
+                .then(() => {
+                  physicalAudioPlayed = true;
+                  updateSpeechState({ isPlaying: true, isPaused: false });
+                })
+                .catch(() => {
+                  tryPlaySource(urlIndex + 1);
+                });
+            }
           });
-        }
       };
 
       tryPlaySource(0);

@@ -27,6 +27,7 @@ export function AudioWidget() {
     playbackRate: 1.0,
   });
 
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
@@ -36,14 +37,15 @@ export function AudioWidget() {
     return subscribeSpeechState(setState);
   }, []);
 
-  // Poll time updates from globalActiveAudio
+  // Poll time updates from globalActiveAudio or local audioRef safely
   useEffect(() => {
     let timer: any = null;
     if (state.isPlaying) {
       timer = setInterval(() => {
-        if (globalActiveAudio) {
-          setCurrentTime(globalActiveAudio.currentTime || 0);
-          setDuration(globalActiveAudio.duration || 0);
+        const player = globalActiveAudio || audioRef.current;
+        if (player) {
+          setCurrentTime(player.currentTime || 0);
+          setDuration(player.duration || 0);
         }
       }, 250);
     }
@@ -55,11 +57,12 @@ export function AudioWidget() {
   if (!state.activeTextId) return null;
 
   const togglePlayPause = () => {
-    if (globalActiveAudio) {
-      if (globalActiveAudio.paused) {
-        globalActiveAudio.play().catch(() => {});
+    const player = globalActiveAudio || audioRef.current;
+    if (player) {
+      if (player.paused) {
+        player.play().catch(() => {});
       } else {
-        globalActiveAudio.pause();
+        player.pause();
       }
     } else if (typeof window !== "undefined" && window.speechSynthesis) {
       if (window.speechSynthesis.paused) {
@@ -72,8 +75,9 @@ export function AudioWidget() {
 
   const changeSpeed = (rate: number) => {
     setPlaybackSpeed(rate);
-    if (globalActiveAudio) {
-      globalActiveAudio.playbackRate = rate;
+    const player = globalActiveAudio || audioRef.current;
+    if (player) {
+      player.playbackRate = rate;
     }
   };
 

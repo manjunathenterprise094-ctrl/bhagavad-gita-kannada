@@ -7,12 +7,13 @@ import { Input } from "@/components/ui/input";
 import { 
   BookOpen, Search, X, Volume2, VolumeX, Menu, Compass, BookOpenCheck, 
   Info, Bookmark, ArrowRight, Sparkles, GraduationCap, Heart, Flame, Crown, Globe,
-  MessageSquareMore, Music, Play, Frown, Trophy, Smile, AlertCircle
+  MessageSquareMore, Music, Play, Frown, Trophy, Smile, AlertCircle,
+  MapPin, Download, Star, ShieldCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { updateMetaTags, updateSchemaOrg } from "@/lib/seo";
 import Navbar from "@/components/Navbar";
-import { useSpeech, FixedAudioPlayerWidget } from "@/lib/speech";
+import { useSpeech } from "@/lib/speech";
 import { getSadhanaStats, type SadhanaStats } from "@/lib/sadhana";
 
 // Global Audio Singleton for continuous playback across pages
@@ -603,6 +604,145 @@ const EMOTION_REMEDIES: Record<string, {
   }
 };
 
+// 7. Geo-Engine Dynamic Location Welcome Banner
+interface GeoLocationData {
+  city: string;
+  region: string;
+  country: string;
+  isIndia: boolean;
+}
+
+function GeoWelcomeBanner() {
+  const [geo, setGeo] = useState<GeoLocationData | null>(null);
+
+  useEffect(() => {
+    // 1. Fast timezone fallback
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const likelyIndia = tz.includes("Calcutta") || tz.includes("Kolkata") || tz.includes("Asia/Kolkata") || tz.includes("India");
+
+    // 2. Query free API for accurate city/country
+    fetch("https://freeipapi.com/api/json")
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.countryName) {
+          setGeo({
+            city: data.cityName || "",
+            region: data.regionName || "",
+            country: data.countryName || "",
+            isIndia: data.countryCode === "IN" || likelyIndia
+          });
+        }
+      })
+      .catch(() => {
+        if (likelyIndia) {
+          setGeo({
+            city: "Karnataka",
+            region: "India",
+            country: "India",
+            isIndia: true
+          });
+        }
+      });
+  }, []);
+
+  if (!geo) return null;
+
+  return (
+    <motion.div 
+      className="max-w-2xl mx-auto px-4 mt-6 mb-2 font-sans"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-primary/5 to-amber-500/10 border border-primary/20 backdrop-blur-sm shadow-sm text-left">
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 rounded-xl bg-primary/10 text-primary">
+            <MapPin className="h-4 w-4 animate-bounce" />
+          </div>
+          <div>
+            <p className="text-[11px] font-bold text-foreground">
+              {geo.isIndia 
+                ? `Namaste seeker from ${geo.city ? `${geo.city}, ` : ""}${geo.country}! 🕉️`
+                : `Greetings seeker from ${geo.city ? `${geo.city}, ` : ""}${geo.country}! 🌍`}
+            </p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              {geo.isIndia 
+                ? "Explore chapters recommended for your spiritual journey in Kannada & English script."
+                : "Contemplate the eternal songs of Lord Krishna with detailed explanations."}
+            </p>
+          </div>
+        </div>
+        <span className="text-xs shrink-0 select-none animate-pulse">✨</span>
+      </div>
+    </motion.div>
+  );
+}
+
+// 8. Google Play Store Download Promo Banner Component
+function PlayStorePromoCard() {
+  return (
+    <section className="py-10 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto mb-10 relative z-10 text-center font-sans">
+      <motion.div 
+        className="p-6 md:p-8 rounded-3xl bg-gradient-to-br from-card/90 via-primary/5 to-card/90 border-2 border-primary/20 hover:border-primary/45 shadow-2xl relative overflow-hidden text-left"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="absolute -right-24 -top-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="space-y-3 max-w-lg">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-bold font-sans">
+              <Download className="h-3 w-3" /> Play Store Application
+            </div>
+            
+            <h3 className="text-xl md:text-2xl font-extrabold text-foreground leading-tight tracking-tight">
+              Srimad Bhagavad Gita Kannada Mobile App
+            </h3>
+            
+            <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+              Access the complete Bhagavad Gita with offline search, instant Sanskrit sloka voice recitations, daily quotes, sadhana track widgets, and dark mode theme. 100% Free and Ad-free forever.
+            </p>
+            
+            <div className="flex flex-wrap items-center gap-4 pt-1 text-[11px] text-foreground font-semibold font-sans">
+              <span className="flex items-center gap-1">
+                <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                <strong>4.9/5</strong> (User Rating)
+              </span>
+              <span className="flex items-center gap-1">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                No Ads / Subscriptions
+              </span>
+            </div>
+          </div>
+          
+          <div className="shrink-0 w-full md:w-auto flex flex-col items-center gap-3">
+            <a 
+              href="https://play.google.com/store/apps/details?id=co.median.android.mbbopqr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-black hover:bg-zinc-900 border border-border/40 text-white font-sans transition-all w-full justify-center shadow-lg btn-glow"
+              aria-label="Download from Google Play Store"
+            >
+              <svg viewBox="0 0 512 512" className="h-6 w-6 fill-white shrink-0">
+                <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58 33.3-60.7-60.7 60.7-60.7 58 33.3c15.1 8.7 25.3 24.3 25.3 42.1s-10.2 33.4-25.3 42.1zM385.4 337.8L104.6 499l220.7-220.7 60.1 59.5z"/>
+              </svg>
+              <div className="text-left leading-none">
+                <div className="text-[9px] uppercase tracking-wider text-zinc-400 font-medium font-sans">Get it on</div>
+                <div className="text-sm font-bold font-sans mt-0.5">Google Play Store</div>
+              </div>
+            </a>
+            <span className="text-[10px] text-muted-foreground font-sans">
+              Compatible with all Android devices
+            </span>
+          </div>
+        </div>
+      </motion.div>
+    </section>
+  );
+}
+
 // Main Home Page Component
 export default function Home() {
   const [selectedPath, setSelectedPath] = useState("all");
@@ -733,27 +873,50 @@ export default function Home() {
     );
     updateSchemaOrg({
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Srimad Bhagavad Gita AI",
-      "alternateName": "ಶ್ರೀಮದ್ ಭಗವದ್ಗೀತೆ",
-      "url": "https://gita.sanatana360.com",
-      "description": "Explore the 18 chapters and 700 verses of Srimad Bhagavad Gita with full translations and meanings in Kannada and English, alongside an interactive AI Krishna chatbot dialog.",
-      "applicationCategory": "EducationalApplication, SpiritualApplication",
-      "operatingSystem": "All",
-      "browserRequirements": "Requires JavaScript. Requires HTML5.",
-      "creator": {
-        "@type": "Organization",
-        "name": "Sanatana 360",
-        "url": "https://gita.sanatana360.com"
-      },
-      "about": {
-        "@type": "CreativeWork",
-        "name": "Srimad Bhagavad Gita",
-        "author": {
-          "@type": "Person",
-          "name": "Lord Krishna"
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "name": "Srimad Bhagavad Gita AI",
+          "alternateName": "ಶ್ರೀಮದ್ ಭಗವದ್ಗೀತೆ",
+          "url": "https://gita.sanatana360.com",
+          "description": "Explore the 18 chapters and 700 verses of Srimad Bhagavad Gita with full translations and meanings in Kannada and English, alongside an interactive AI Krishna chatbot dialog.",
+          "applicationCategory": "EducationalApplication, SpiritualApplication",
+          "operatingSystem": "All",
+          "browserRequirements": "Requires JavaScript. Requires HTML5.",
+          "creator": {
+            "@type": "Organization",
+            "name": "Sanatana 360",
+            "url": "https://gita.sanatana360.com"
+          },
+          "about": {
+            "@type": "CreativeWork",
+            "name": "Srimad Bhagavad Gita",
+            "author": {
+              "@type": "Person",
+              "name": "Lord Krishna"
+            }
+          }
+        },
+        {
+          "@type": "MobileApplication",
+          "name": "Bhagavad Gita Kannada",
+          "operatingSystem": "Android",
+          "applicationCategory": "EducationalApplication",
+          "downloadUrl": "https://play.google.com/store/apps/details?id=co.median.android.mbbopqr",
+          "installUrl": "https://play.google.com/store/apps/details?id=co.median.android.mbbopqr",
+          "operatingSystemRequirements": "Android 5.0 and up",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "INR"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "ratingCount": "1040"
+          }
         }
-      }
+      ]
     });
   }, []);
 
@@ -856,12 +1019,37 @@ export default function Home() {
             Explore the divine dialogue between Lord Krishna and Arjuna — 18 chapters, 700 verses of eternal wisdom on life, duty, and devotion.
           </motion.p>
 
+          {/* Majestic Arched Chariot Portal */}
+          <motion.div
+            className="relative w-full max-w-lg mx-auto mb-8 rounded-t-[140px] rounded-b-3xl overflow-hidden border-2 border-primary/35 shadow-[0_0_35px_rgba(245,158,11,0.18)] bg-card/45 backdrop-blur-md p-2 hover:border-primary/50 transition-colors duration-300"
+            initial={{ opacity: 0, scale: 0.92, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+          >
+            <div className="relative aspect-[16/10] w-full rounded-t-[132px] rounded-b-2xl overflow-hidden shadow-inner">
+              <img 
+                src="/kurukshetra_chariot.png" 
+                alt="Lord Krishna guiding Arjuna on the chariot in Kurukshetra"
+                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105 select-none"
+                draggable={false}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent pointer-events-none" />
+              
+              {/* Floating golden badge */}
+              <div className="absolute bottom-4 left-0 right-0 px-6 text-center pointer-events-none">
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-amber-400 bg-black/75 px-4 py-1.5 rounded-full border border-amber-500/25 backdrop-blur-sm shadow-md">
+                  Kurukshetra Dialogues · ಕುರುಕ್ಷೇತ್ರ ಸಂವಾದ
+                </span>
+              </div>
+            </div>
+          </motion.div>
+
           {/* CTA Row */}
           <motion.div
             className="flex flex-wrap gap-3 justify-center mb-8"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.65 }}
           >
             <Link href="/chat" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm shadow-lg btn-shimmer btn-glow divine-ripple cursor-pointer">
               <span>🙏</span> Ask Krishna
@@ -1067,6 +1255,9 @@ export default function Home() {
         </motion.div>
       </motion.div>
     </section>
+
+      {/* Geo-Engine Location Banner */}
+      <GeoWelcomeBanner />
 
       {/* Dynamic Search */}
       <SearchSection />
@@ -1704,6 +1895,9 @@ export default function Home() {
           );
         })()}
       </AnimatePresence>
+
+      {/* App Store Download Promotion Banner */}
+      <PlayStorePromoCard />
 
       {/* Footer */}
       <footer className="bg-muted/30 py-8 px-4 text-center border-t border-border/50 mt-16 relative z-10">

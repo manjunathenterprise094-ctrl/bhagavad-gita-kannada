@@ -173,7 +173,7 @@ export default function Bookmarks() {
               {/* Embedded Hardcoded Audio Player Tile */}
               <TileAudioPlayer
                 id={v.id}
-                verseNum={v.verse}
+                verseNum={v.verseNumber}
                 chapterNum={v.chapterId}
                 slokaText={v.transliteration}
                 meaningText={v.meaning}

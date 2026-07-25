@@ -121,41 +121,81 @@ export function cleanSlokaForSpeech(text: string): string {
     .trim();
 }
 
-function getBestIndianVoice(): { voice: SpeechSynthesisVoice | null; isKannadaNative: boolean } {
+let proxyCheckStatus: "idle" | "checking" | "supported" | "not_supported" = "idle";
+
+function checkTtsProxy() {
+  if (typeof window === "undefined" || proxyCheckStatus !== "idle") return;
+  proxyCheckStatus = "checking";
+  fetch("/api/tts?text=ping&lang=en")
+    .then(res => {
+      if (res.status === 200) {
+        proxyCheckStatus = "supported";
+      } else {
+        proxyCheckStatus = "not_supported";
+      }
+    })
+    .catch(() => {
+      proxyCheckStatus = "not_supported";
+    });
+}
+
+if (typeof window !== "undefined") {
+  checkTtsProxy();
+}
+
+function getBestVoiceForLanguage(langCode: string): { voice: SpeechSynthesisVoice | null; isLanguageNative: boolean } {
   if (typeof window === "undefined" || !window.speechSynthesis) {
-    return { voice: null, isKannadaNative: false };
+    return { voice: null, isLanguageNative: false };
   }
 
   const voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
-  if (!voices || voices.length === 0) return { voice: null, isKannadaNative: false };
+  if (!voices || voices.length === 0) return { voice: null, isLanguageNative: false };
 
-  // 1. Try Kannada Voice (kn-IN)
-  const knVoice = voices.find(v => {
+  const target = langCode.toLowerCase();
+
+  // 1. Try exact match for language code (e.g. "kn" or "hi" or "en")
+  const nativeVoice = voices.find(v => {
     const l = v.lang.toLowerCase();
-    const n = v.name.toLowerCase();
-    return l.includes("kn") || n.includes("kannada");
+    return l.startsWith(target) || (target === "kn" && l.includes("kannada")) || (target === "hi" && l.includes("hindi"));
   });
-  if (knVoice) return { voice: knVoice, isKannadaNative: true };
+  if (nativeVoice) return { voice: nativeVoice, isLanguageNative: true };
 
-  // 2. Try Hindi Voice (hi-IN)
-  const hiVoice = voices.find(v => {
+  // 2. Fallbacks if native language voice not found
+  if (target === "kn") {
+    // Kannada fallback order: Hindi -> Indian English -> English
+    const hiVoice = voices.find(v => v.lang.toLowerCase().startsWith("hi"));
+    if (hiVoice) return { voice: hiVoice, isLanguageNative: false };
+
+    const indianEnVoice = voices.find(v => {
+      const l = v.lang.toLowerCase();
+      const n = v.name.toLowerCase();
+      return l.includes("en-in") || n.includes("india") || n.includes("indian") || n.includes("rishi") || n.includes("veena");
+    });
+    if (indianEnVoice) return { voice: indianEnVoice, isLanguageNative: false };
+  }
+
+  if (target === "hi") {
+    // Hindi fallback order: Kannada -> Indian English -> English
+    const knVoice = voices.find(v => v.lang.toLowerCase().startsWith("kn") || v.name.toLowerCase().includes("kannada"));
+    if (knVoice) return { voice: knVoice, isLanguageNative: false };
+
+    const indianEnVoice = voices.find(v => {
+      const l = v.lang.toLowerCase();
+      const n = v.name.toLowerCase();
+      return l.includes("en-in") || n.includes("india") || n.includes("indian") || n.includes("rishi") || n.includes("veena");
+    });
+    if (indianEnVoice) return { voice: indianEnVoice, isLanguageNative: false };
+  }
+
+  // 3. Indian English / Default English fallback
+  const defaultIndianEn = voices.find(v => {
     const l = v.lang.toLowerCase();
-    const n = v.name.toLowerCase();
-    return l.includes("hi") || n.includes("hindi");
+    return l.includes("en-in") || l.includes("en_in");
   });
-  if (hiVoice) return { voice: hiVoice, isKannadaNative: false };
+  if (defaultIndianEn) return { voice: defaultIndianEn, isLanguageNative: false };
 
-  // 3. Try Indian English Voice (en-IN)
-  const indianEnVoice = voices.find(v => {
-    const l = v.lang.toLowerCase();
-    const n = v.name.toLowerCase();
-    return l.includes("en-in") || l.includes("en_in") || n.includes("india") || n.includes("indian") || n.includes("rishi") || n.includes("veena") || n.includes("sangeeta");
-  });
-  if (indianEnVoice) return { voice: indianEnVoice, isKannadaNative: false };
-
-  // 4. Default to any English voice
   const defaultEn = voices.find(v => v.lang.toLowerCase().startsWith("en")) || voices[0];
-  return { voice: defaultEn || null, isKannadaNative: false };
+  return { voice: defaultEn || null, isLanguageNative: false };
 }
 
 export function useSpeech() {
@@ -210,11 +250,10 @@ export function useSpeech() {
     // MP3 Stream URLs
     const localProxyUrl = `/api/tts?text=${enc}&lang=${targetTtsLang}`;
     const googleDirectUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${enc}&tl=${targetTtsLang}&client=tw-ob`;
-    const corsProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(googleDirectUrl)}`;
 
     let physicalAudioStarted = false;
 
-    // 1. SYNCHRONOUSLY CREATE UNMUTED HTML5 AUDIO INSTANCE (Preserves click gesture!)
+    // SYNCHRONOUSLY CREATE UNMUTED HTML5 AUDIO INSTANCE (Preserves click gesture!)
     try {
       const audio = new Audio();
       audio.volume = 1.0;
@@ -225,8 +264,22 @@ export function useSpeech() {
         stopAllGlobalAudio();
       };
 
-      // Try local proxy first, then CORS proxy
-      audio.src = localProxyUrl;
+      audio.onerror = (e) => {
+        console.error("Audio playback error:", e);
+        if (!physicalAudioStarted) {
+          triggerWebSpeech(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText, text);
+        } else {
+          stopAllGlobalAudio();
+        }
+      };
+
+      // Set the audio source based on background proxy check
+      if (proxyCheckStatus === "not_supported") {
+        audio.src = googleDirectUrl;
+      } else {
+        audio.src = localProxyUrl;
+      }
+
       const playPromise = audio.play();
 
       if (playPromise !== undefined) {
@@ -235,32 +288,41 @@ export function useSpeech() {
             physicalAudioStarted = true;
             updateSpeechState({ isPlaying: true, isPaused: false });
           })
-          .catch(() => {
-            // Local proxy 404 (static host), switch to CORS proxy URL
-            audio.src = corsProxyUrl;
-            audio.volume = 1.0;
-            audio.muted = false;
-            
-            audio.play().then(() => {
-              physicalAudioStarted = true;
-              updateSpeechState({ isPlaying: true, isPaused: false });
-            }).catch(() => {
-              // Fallback to Web Speech API
+          .catch((err) => {
+            console.warn("Primary audio source play failed:", err);
+            // If proxy check failed or direct Google Translate fails, fall back:
+            if (proxyCheckStatus !== "not_supported") {
+              // Try direct Google Translate URL as same-origin bypass
+              audio.src = googleDirectUrl;
+              audio.play()
+                .then(() => {
+                  physicalAudioStarted = true;
+                  updateSpeechState({ isPlaying: true, isPaused: false });
+                })
+                .catch((e2) => {
+                  console.warn("Fallback direct Google TTS failed:", e2);
+                  if (!physicalAudioStarted) {
+                    triggerWebSpeech(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText, text);
+                  }
+                });
+            } else {
+              // Directly fall back to web speech
               if (!physicalAudioStarted) {
-                triggerWebSpeech(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText);
+                triggerWebSpeech(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText, text);
               }
-            });
+            }
           });
       }
-    } catch (_) {
-      triggerWebSpeech(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText);
+    } catch (e) {
+      console.warn("HTML5 Audio creation failed, falling back to Web Speech:", e);
+      triggerWebSpeech(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText, text);
     }
 
     updateSpeechState({
       activeTextId: id,
       isPlaying: true,
       isPaused: false,
-      audioUrl: localProxyUrl,
+      audioUrl: proxyCheckStatus === "not_supported" ? googleDirectUrl : localProxyUrl,
       activeInfo: info || null,
       textToSpeak: rawTextToSpeak,
       lang,
@@ -272,15 +334,21 @@ export function useSpeech() {
     textToSpeak: string, 
     lang: "en" | "kn" | "sloka", 
     targetTtsLang: string, 
-    kannadaScriptText?: string
+    kannadaScriptText?: string,
+    transliteratedText?: string
   ) => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
 
-    const { voice, isKannadaNative } = getBestIndianVoice();
+    const { voice, isLanguageNative } = getBestVoiceForLanguage(targetTtsLang);
     let speechText = textToSpeak;
 
-    if (!isKannadaNative) {
-      speechText = cleanSlokaForSpeech(textToSpeak);
+    // Smart fallback for slokas if the voice is not natively Kannada:
+    if (lang === "sloka") {
+      if (!isLanguageNative || !voice || !voice.lang.toLowerCase().startsWith("kn")) {
+        // If the voice is English/Hindi/etc., it can read the English transliteration
+        // whereas it would fail completely on Kannada characters.
+        speechText = transliteratedText ? cleanSlokaForSpeech(transliteratedText) : textToSpeak;
+      }
     }
 
     try {
@@ -297,11 +365,11 @@ export function useSpeech() {
         utterance.voice = voice;
         utterance.lang = voice.lang;
       } else {
-        utterance.lang = "en-IN";
+        utterance.lang = targetTtsLang === "kn" ? "kn-IN" : (targetTtsLang === "hi" ? "hi-IN" : "en-IN");
       }
 
-      utterance.pitch = 0.95;
-      utterance.rate = 0.85;
+      utterance.pitch = lang === "sloka" ? 0.95 : 1.0;
+      utterance.rate = lang === "sloka" ? 0.8 : 0.9;
 
       utterance.onstart = () => {
         updateSpeechState({ isPlaying: true, isPaused: false });
@@ -311,9 +379,17 @@ export function useSpeech() {
         stopAllGlobalAudio();
       };
 
+      utterance.onerror = (e) => {
+        console.warn("SpeechSynthesis utterance error:", e);
+        stopAllGlobalAudio();
+      };
+
       window.speechSynthesis.resume();
       window.speechSynthesis.speak(utterance);
-    } catch (_) {}
+    } catch (err) {
+      console.error("Web Speech trigger failed:", err);
+      stopAllGlobalAudio();
+    }
   };
 
   const pauseSpeech = () => {

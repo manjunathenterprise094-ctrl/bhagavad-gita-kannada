@@ -1,7 +1,55 @@
+import { useState, useEffect } from "react";
 import { Heart, Mail, ExternalLink } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Footer() {
+  const [visitorsCount, setVisitorsCount] = useState(0);
+  const [pageViewsCount, setPageViewsCount] = useState(0);
+
+  useEffect(() => {
+    // 1. Session check to accurately track unique visitors
+    let isNewVisitor = false;
+    try {
+      const activeSession = sessionStorage.getItem("gita_session_active");
+      if (!activeSession) {
+        sessionStorage.setItem("gita_session_active", "true");
+        isNewVisitor = true;
+      }
+    } catch (_) {}
+
+    // 2. Query visits API
+    fetch(`/api/visits?new=${isNewVisitor}`)
+      .then(res => {
+        if (res.status === 200) return res.json();
+        throw new Error("API offline");
+      })
+      .then(data => {
+        if (data && typeof data.visitors === "number") {
+          setVisitorsCount(data.visitors);
+          setPageViewsCount(data.pageViews);
+        }
+      })
+      .catch(() => {
+        // Fallback for static deployment
+        try {
+          const savedVisits = localStorage.getItem("gita_visits_data_v2");
+          if (savedVisits) {
+            const parsed = JSON.parse(savedVisits);
+            const nextViews = parsed.pageViews + 1;
+            const nextVisitors = parsed.visitors + (isNewVisitor ? 1 : 0);
+            const nextData = { visitors: nextVisitors, pageViews: nextViews };
+            localStorage.setItem("gita_visits_data_v2", JSON.stringify(nextData));
+            setVisitorsCount(nextVisitors);
+            setPageViewsCount(nextViews);
+          } else {
+            const initialData = { visitors: 1, pageViews: 1 };
+            localStorage.setItem("gita_visits_data_v2", JSON.stringify(initialData));
+            setVisitorsCount(1);
+            setPageViewsCount(1);
+          }
+        } catch (_) {}
+      });
+  }, []);
   return (
     <footer className="relative z-20 w-full border-t border-border/50 bg-background/80 backdrop-blur-md mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -118,6 +166,19 @@ export default function Footer() {
               Contact Developer
               <ExternalLink className="h-3 w-3 opacity-50" />
             </a>
+          </div>
+        </div>
+
+        {/* Dynamic Visitor Counter Badge */}
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5 text-[11px] font-sans font-bold text-muted-foreground mb-5 pb-1 select-none">
+          <div className="flex items-center gap-1.5 bg-primary/5 border border-primary/10 px-3 py-1 rounded-full shadow-2xs">
+            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+            <span>Seekers Reached (ಪ್ರೇಕ್ಷಕರು):</span>
+            <span className="text-primary font-bold">{visitorsCount.toLocaleString()}</span>
+          </div>
+          <div className="flex items-center gap-1.5 bg-primary/5 border border-primary/10 px-3 py-1 rounded-full shadow-2xs">
+            <span>Slokas Read (ಧ್ಯಾನಿಸಿದ ಶ್ಲೋಕಗಳು):</span>
+            <span className="text-primary font-bold">{pageViewsCount.toLocaleString()}</span>
           </div>
         </div>
 

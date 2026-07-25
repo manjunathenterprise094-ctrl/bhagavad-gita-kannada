@@ -28,26 +28,34 @@ export function getSadhanaStats(): SadhanaStats {
 
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
+    const today = getTodayDateString();
+    const yesterday = getYesterdayDateString();
+
     if (!raw) {
-      const initial: SadhanaStats = { streakCount: 0, lastReadDate: null, completedVerses: [] };
+      // First visit: start streak at 1 today
+      const initial: SadhanaStats = { streakCount: 1, lastReadDate: today, completedVerses: [] };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
       return initial;
     }
 
     const stats: SadhanaStats = JSON.parse(raw);
     
-    // Check if streak is broken (more than 1 day missed)
-    if (stats.lastReadDate) {
-      const today = getTodayDateString();
-      const yesterday = getYesterdayDateString();
-      
-      if (stats.lastReadDate !== today && stats.lastReadDate !== yesterday) {
-        // Over a day missed, reset streak to 0
-        stats.streakCount = 0;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
-      }
+    // Check and update streak on load
+    if (stats.lastReadDate === null) {
+      stats.streakCount = 1;
+      stats.lastReadDate = today;
+    } else if (stats.lastReadDate === yesterday) {
+      // Consecutive day visit: increment streak!
+      stats.streakCount += 1;
+      stats.lastReadDate = today;
+    } else if (stats.lastReadDate !== today) {
+      // More than 1 day missed: reset streak to 1 today
+      stats.streakCount = 1;
+      stats.lastReadDate = today;
     }
+    // If stats.lastReadDate === today, they already read today, keep stats unchanged
 
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
     return stats;
   } catch (e) {
     console.error("Error reading sadhana stats:", e);

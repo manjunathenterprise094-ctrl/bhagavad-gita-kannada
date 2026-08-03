@@ -128,7 +128,8 @@ function checkTtsProxy() {
   proxyCheckStatus = "checking";
   fetch("/api/tts?text=ping&lang=en")
     .then(res => {
-      if (res.status === 200) {
+      const contentType = res.headers.get("content-type") || "";
+      if (res.status === 200 && contentType.toLowerCase().includes("audio")) {
         proxyCheckStatus = "supported";
       } else {
         proxyCheckStatus = "not_supported";

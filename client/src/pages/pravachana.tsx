@@ -252,13 +252,12 @@ export default function Pravachana() {
     setMirrorIdx(0);
   }, [currentTrackIdx]);
 
-  // Single Unified Effect to control play, pause, and source loading
+  // Synchronize audio source and metadata load when track/mirror changes
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     const currentUrl = `${BASE_URLS[mirrorIdx]}${currentTrack.filename}`;
-    // Check if the current audio tag's src matches the target URL
     const isSameSource = audio.src && (audio.src === currentUrl || audio.src.includes(currentTrack.filename));
 
     if (!isSameSource) {
@@ -267,26 +266,32 @@ export default function Pravachana() {
       audio.load();
       setCurrentTime(0);
       setDuration(0);
-    }
-
-    if (isPlaying) {
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.warn("Playback initialization failed for mirror:", mirrorIdx, err);
+      
+      // If we were already playing, automatically resume play on the new track
+      if (isPlaying) {
+        audio.play().catch((err) => {
+          console.warn("Failed to autoplay new source:", err);
         });
       }
-    } else {
-      if (!audio.paused) {
-        audio.pause();
-      }
     }
-  }, [currentTrackIdx, mirrorIdx, isPlaying]);
+  }, [currentTrackIdx, mirrorIdx]);
 
-  // Handle Play Pause click
+  // Handle Play Pause click - Synchronously controls audio playback inside click gesture thread
   const togglePlay = () => {
-    if (!audioRef.current) return;
-    setIsPlaying(!isPlaying);
+    const audio = audioRef.current;
+    if (!audio) return;
+    
+    if (isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
+    } else {
+      audio.play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => {
+          console.warn("Playback failed:", err);
+          setIsPlaying(false);
+        });
+    }
   };
 
   // Handle Audio error - try fallback mirror
@@ -341,16 +346,33 @@ export default function Pravachana() {
 
   // Navigation
   const playNext = () => {
-    setCurrentTrackIdx((prev) => (prev + 1) % TRACKS.length);
+    const nextIdx = (currentTrackIdx + 1) % TRACKS.length;
+    handleTrackSelect(nextIdx);
   };
 
   const playPrev = () => {
-    setCurrentTrackIdx((prev) => (prev - 1 + TRACKS.length) % TRACKS.length);
+    const prevIdx = (currentTrackIdx - 1 + TRACKS.length) % TRACKS.length;
+    handleTrackSelect(prevIdx);
   };
 
+  // Track select - Synchronously triggers audio playback inside click gesture thread
   const handleTrackSelect = (idx: number) => {
     setCurrentTrackIdx(idx);
     setIsPlaying(true);
+
+    const audio = audioRef.current;
+    if (audio) {
+      const targetUrl = `${BASE_URLS[0]}${TRACKS[idx].filename}`;
+      audio.pause();
+      audio.src = targetUrl;
+      audio.load();
+      audio.play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => {
+          console.warn("Playback failed for selected track:", err);
+          setIsPlaying(false);
+        });
+    }
   };
 
   // Formatting helpers

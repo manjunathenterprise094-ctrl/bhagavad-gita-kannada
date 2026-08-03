@@ -148,8 +148,28 @@ function getBestVoiceForLanguage(langCode: string): { voice: SpeechSynthesisVoic
     return { voice: null, isLanguageNative: false };
   }
 
-  const voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
-  if (!voices || voices.length === 0) return { voice: null, isLanguageNative: false };
+  const rawVoices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
+  if (!rawVoices || rawVoices.length === 0) return { voice: null, isLanguageNative: false };
+
+  // Sort voices to prioritize high-quality Google or Microsoft natural voices
+  const voices = [...rawVoices].sort((a, b) => {
+    const nameA = a.name.toLowerCase();
+    const nameB = b.name.toLowerCase();
+    
+    // Google voices sound very natural, prioritize them
+    const isGoogleA = nameA.includes("google") || nameA.includes("natural");
+    const isGoogleB = nameB.includes("google") || nameB.includes("natural");
+    if (isGoogleA && !isGoogleB) return -1;
+    if (!isGoogleA && isGoogleB) return 1;
+
+    // Microsoft voices are also high quality
+    const isMsA = nameA.includes("microsoft");
+    const isMsB = nameB.includes("microsoft");
+    if (isMsA && !isMsB) return -1;
+    if (!isMsA && isMsB) return 1;
+
+    return 0;
+  });
 
   const target = langCode.toLowerCase();
 
@@ -198,6 +218,34 @@ function getBestVoiceForLanguage(langCode: string): { voice: SpeechSynthesisVoic
   return { voice: defaultEn || null, isLanguageNative: false };
 }
 
+let isAudioUnlocked = false;
+
+export function unlockAudio() {
+  if (isAudioUnlocked || typeof window === "undefined") return;
+  
+  // 1. Play silent sound to unlock HTML5 audio context
+  try {
+    const silent = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA");
+    silent.volume = 0;
+    silent.play()
+      .then(() => {
+        isAudioUnlocked = true;
+        console.log("HTML5 Audio unlocked");
+      })
+      .catch(() => {});
+  } catch (_) {}
+
+  // 2. Play silent utterance to unlock SpeechSynthesis context
+  if (window.speechSynthesis) {
+    try {
+      const u = new SpeechSynthesisUtterance(" ");
+      u.volume = 0;
+      window.speechSynthesis.speak(u);
+      console.log("SpeechSynthesis unlocked");
+    } catch (_) {}
+  }
+}
+
 export function useSpeech() {
   const [state, setState] = useState<SpeechState>(currentState);
 
@@ -214,6 +262,9 @@ export function useSpeech() {
     info?: SpeechActiveInfo,
     kannadaScriptText?: string
   ) => {
+    // Synchronously unlock audio inside user click gesture
+    unlockAudio();
+
     // Toggle off if currently active
     if (state.activeTextId === id) {
       stopAllGlobalAudio();

@@ -245,6 +245,22 @@ export function useSpeech() {
     const cleanSnippet = rawTextToSpeak.slice(0, 160).trim();
     if (!cleanSnippet) return;
 
+    // DIRECT SYNC FALLBACK TO WEB SPEECH ON STATIC DEPLOYMENTS (Avoids async gesture blocking on mobile)
+    if (proxyCheckStatus !== "supported") {
+      triggerWebSpeech(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText, text);
+      updateSpeechState({
+        activeTextId: id,
+        isPlaying: true,
+        isPaused: false,
+        audioUrl: null,
+        activeInfo: info || null,
+        textToSpeak: rawTextToSpeak,
+        lang,
+        kannadaScriptText,
+      });
+      return;
+    }
+
     const enc = encodeURIComponent(cleanSnippet);
     
     // MP3 Stream URLs
@@ -273,12 +289,7 @@ export function useSpeech() {
         }
       };
 
-      // Set the audio source based on background proxy check
-      if (proxyCheckStatus === "not_supported") {
-        audio.src = googleDirectUrl;
-      } else {
-        audio.src = localProxyUrl;
-      }
+      audio.src = localProxyUrl;
 
       const playPromise = audio.play();
 
@@ -290,27 +301,19 @@ export function useSpeech() {
           })
           .catch((err) => {
             console.warn("Primary audio source play failed:", err);
-            // If proxy check failed or direct Google Translate fails, fall back:
-            if (proxyCheckStatus !== "not_supported") {
-              // Try direct Google Translate URL as same-origin bypass
-              audio.src = googleDirectUrl;
-              audio.play()
-                .then(() => {
-                  physicalAudioStarted = true;
-                  updateSpeechState({ isPlaying: true, isPaused: false });
-                })
-                .catch((e2) => {
-                  console.warn("Fallback direct Google TTS failed:", e2);
-                  if (!physicalAudioStarted) {
-                    triggerWebSpeech(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText, text);
-                  }
-                });
-            } else {
-              // Directly fall back to web speech
-              if (!physicalAudioStarted) {
-                triggerWebSpeech(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText, text);
-              }
-            }
+            // Try direct Google Translate URL as same-origin bypass
+            audio.src = googleDirectUrl;
+            audio.play()
+              .then(() => {
+                physicalAudioStarted = true;
+                updateSpeechState({ isPlaying: true, isPaused: false });
+              })
+              .catch((e2) => {
+                console.warn("Fallback direct Google TTS failed:", e2);
+                if (!physicalAudioStarted) {
+                  triggerWebSpeech(rawTextToSpeak, lang, targetTtsLang, kannadaScriptText, text);
+                }
+              });
           });
       }
     } catch (e) {
@@ -322,7 +325,7 @@ export function useSpeech() {
       activeTextId: id,
       isPlaying: true,
       isPaused: false,
-      audioUrl: proxyCheckStatus === "not_supported" ? googleDirectUrl : localProxyUrl,
+      audioUrl: localProxyUrl,
       activeInfo: info || null,
       textToSpeak: rawTextToSpeak,
       lang,

@@ -158,6 +158,77 @@ export default function Chat() {
     }
   }, [language]);
 
+  // Auto-trigger question from URL query parameter if present
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const initialQuestion = params.get("q");
+    if (initialQuestion && initialQuestion.trim()) {
+      // Clear query params from URL so refresh doesn't trigger again
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, "", cleanUrl);
+
+      const userMessage = initialQuestion.trim();
+      const isKannada = /[\u0C80-\u0CFF]/.test(userMessage);
+      const activeLang = isKannada ? "kn" : language;
+      if (isKannada) {
+        setLanguage("kn");
+      }
+
+      const welcomeContent = isKannada
+        ? "ಪ್ರಣಾಮಗಳು ಸತ್ಯಾನ್ವೇಷಿ ಜಿಜ್ಞಾಸುವೇ. ನಾನು ಕೃಷ್ಣ. ಜೀವನ, ಧರ್ಮ ಮತ್ತು ಭಕ್ತಿ ಕುರಿತಾದ ಯಾವುದೇ ಪ್ರಶ್ನೆಗಳನ್ನು ಕೇಳಿ. ಶ್ರೀಮದ್ ಭಗವದ್ಗೀತೆಯ ಬೋಧನೆಗಳ ಆಧಾರದ ಮೇಲೆ ನಿಮ್ಮ ಸಂಶಯಗಳನ್ನು ನಿವಾರಿಸುತ್ತೇನೆ."
+        : "Pranams, O seeker of truth. I am Krishna. Ask Me any question about life, duty, devotion, or wisdom. I shall resolve your doubts using the teachings of the Srimad Bhagavad Gita.";
+
+      const initialThread = [
+        { role: "model" as const, content: welcomeContent },
+        { role: "user" as const, content: userMessage }
+      ];
+      setMessages(initialThread);
+      setIsLoading(true);
+
+      (async () => {
+        try {
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              message: userMessage,
+              history: [],
+              language: activeLang,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error();
+          }
+
+          const data = await response.json();
+          const krishnaResponse = data.response;
+          const newMessages = [...initialThread, { role: "model" as const, content: krishnaResponse }];
+          setMessages(newMessages);
+
+          if (autoListen) {
+            const idx = newMessages.length - 1;
+            setTimeout(() => speak(idx.toString(), krishnaResponse, activeLang), 400);
+          }
+        } catch (err) {
+          console.warn("API error, falling back to local engine:", err);
+          const krishnaResponse = generateLocalKrishnaResponse(userMessage, activeLang);
+          const newMessages = [...initialThread, { role: "model" as const, content: krishnaResponse }];
+          setMessages(newMessages);
+
+          if (autoListen) {
+            const idx = newMessages.length - 1;
+            setTimeout(() => speak(idx.toString(), krishnaResponse, activeLang), 400);
+          }
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+    }
+  }, []);
+
   // Auto-scroll to bottom of conversation
   useEffect(() => {
     if (scrollAreaRef.current) {

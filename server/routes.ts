@@ -326,10 +326,27 @@ Please use this context as the primary source for explanations. Address the seek
     return visits;
   }
 
-  app.get("/api/visits", (req, res) => {
+  app.get("/api/visits", async (req, res) => {
     const isNew = req.query.new === "true";
-    const nextVisits = incrementVisits(isNew);
-    res.json(nextVisits);
+    try {
+      const pageViewsUrl = "https://abacus.jasoncameron.dev/hit/bhagavad_gita_kannada_app/pageViews";
+      const visitorsUrl = isNew
+        ? "https://abacus.jasoncameron.dev/hit/bhagavad_gita_kannada_app/visitors"
+        : "https://abacus.jasoncameron.dev/get/bhagavad_gita_kannada_app/visitors";
+
+      const [pvRes, vRes] = await Promise.all([
+        fetch(pageViewsUrl).then(r => r.json() as Promise<{ value: number }>),
+        fetch(visitorsUrl).then(r => r.json() as Promise<{ value: number }>)
+      ]);
+
+      res.json({
+        visitors: vRes.value || 0,
+        pageViews: pvRes.value || 0
+      });
+    } catch {
+      const nextVisits = incrementVisits(isNew);
+      res.json(nextVisits);
+    }
   });
 
   return httpServer;

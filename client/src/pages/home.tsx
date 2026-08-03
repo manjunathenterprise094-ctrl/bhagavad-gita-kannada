@@ -743,6 +743,15 @@ function PlayStorePromoCard() {
   );
 }
 
+const SEEKER_PROMPTS = [
+  { textEn: "How to stay calm under intense pressure?", textKn: "ತೀವ್ರ ಒತ್ತಡದಲ್ಲಿ ಪ್ರಶಾಂತವಾಗಿರುವುದು ಹೇಗೆ?", icon: Flame },
+  { textEn: "What is my true duty in life when confused?", textKn: "ಗೊಂದಲದಲ್ಲಿದ್ದಾಗ ನನ್ನ ನಿಜವಾದ ಕರ್ತವ್ಯವೇನು?", icon: Compass },
+  { textEn: "How do I control my chattering restless mind?", textKn: "ಚಂಚಲವಾದ ಮನಸ್ಸನ್ನು ಹತೋಟಿಗೆ ತರುವುದು ಹೇಗೆ?", icon: Sparkles },
+  { textEn: "How to overcome fear of failure and anxiety?", textKn: "ಅಪಜಯದ ಭಯ ಮತ್ತು ಆತಂಕವನ್ನು ಗೆಲ್ಲುವುದು ಹೇಗೆ?", icon: Heart },
+  { textEn: "What is the secret of work without stress?", textKn: "ಒತ್ತಡವಿಲ್ಲದ ಕರ್ಮಯೋಗದ ರಹಸ್ಯವೇನು?", icon: GraduationCap },
+  { textEn: "How to build unconditional love and devotion?", textKn: "ನಿಷ್ಕಲ್ಮಷ ಭಕ್ತಿ ಮತ್ತು ಪ್ರೀತಿಯನ್ನು ಬೆಳೆಸಿಕೊಳ್ಳುವುದು ಹೇಗೆ?", icon: Crown }
+];
+
 // Main Home Page Component
 export default function Home() {
   const [selectedPath, setSelectedPath] = useState("all");
@@ -756,6 +765,52 @@ export default function Home() {
   // Sadhana & Emotional Remedies State
   const [sadhana, setSadhana] = useState<SadhanaStats>({ streakCount: 0, lastReadDate: null, completedVerses: [] });
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
+
+  // Dharma Referral State & Handlers
+  const [shareCount, setShareCount] = useState(0);
+  
+  useEffect(() => {
+    const saved = localStorage.getItem("dharma_share_count");
+    if (saved) {
+      setShareCount(parseInt(saved));
+    }
+  }, []);
+
+  const handleShare = (method: "whatsapp" | "copy") => {
+    const nextCount = shareCount + 1;
+    setShareCount(nextCount);
+    localStorage.setItem("dharma_share_count", nextCount.toString());
+
+    const referralText = `🕉️ I am reading the Srimad Bhagavad Gita Kannada app and seeking guidance from Lord Krishna AI. Talk to Krishna here to solve your life's challenges: ${window.location.origin}`;
+
+    if (method === "copy") {
+      navigator.clipboard.writeText(referralText);
+      alert("Referral text copied to clipboard! Share it with friends & family to earn Dharma Points. 🙏");
+    } else {
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(referralText)}`;
+      window.open(whatsappUrl, "_blank");
+    }
+  };
+
+  const getDharmaRank = () => {
+    if (shareCount >= 5) return { title: "Dharma Pracharaka • ಧರ್ಮ ಪ್ರಚಾರಕ 🕉️", badgeColor: "bg-amber-500 text-white border-amber-600 shadow-amber-500/20" };
+    if (shareCount >= 3) return { title: "Dharma Protector • ಧರ್ಮ ರಕ್ಷಕ 🛡️", badgeColor: "bg-purple-600 text-white border-purple-700 shadow-purple-500/20" };
+    if (shareCount >= 1) return { title: "Dharma Messenger • ಧರ್ಮ ದೂತ 📜", badgeColor: "bg-emerald-600 text-white border-emerald-700 shadow-emerald-500/20" };
+    return { title: "Dharma Seeker • ಧರ್ಮ ಜಿಜ್ಞಾಸು 🪔", badgeColor: "bg-primary/10 text-primary border-primary/20" };
+  };
+
+  // Next Unread Verse Logic
+  const getNextUnreadVerse = () => {
+    for (const ch of bhagavadGitaData) {
+      for (const v of ch.verses) {
+        const verseKey = `${ch.id}_${v.verse}`;
+        if (!sadhana.completedVerses.includes(verseKey)) {
+          return { chapterId: ch.id, verseIndex: v.verse };
+        }
+      }
+    }
+    return { chapterId: 1, verseIndex: 1 };
+  };
 
   useEffect(() => {
     setSadhana(getSadhanaStats());
@@ -949,7 +1004,7 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Banner Section */}
-      <section className="relative pt-12 pb-6 px-4 sm:px-6 lg:px-8 text-center z-10">
+      <section className="relative pt-12 pb-6 px-4 sm:px-6 lg:px-8 z-10">
         {/* Divine Halo Aura behind Hero */}
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[320px] h-[320px] md:w-[480px] md:h-[480px] -z-10 pointer-events-none select-none opacity-30">
           <motion.div
@@ -981,286 +1036,210 @@ export default function Home() {
           </motion.div>
         </div>
 
-        <div className="max-w-4xl mx-auto">
-          {/* Divine Om Badge */}
-          <motion.div
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full divine-badge mb-5"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="text-base">🕉️</span>
-            <span>ಶ್ರೀಮದ್ ಭಗವದ್ಗೀತೆ · Srimad Bhagavad Gita</span>
-          </motion.div>
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          {/* Left Column: Text Content & Stats */}
+          <div className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
+            {/* Divine Om Badge */}
+            <motion.div
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full divine-badge"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6 }}
+            >
+              <span className="text-base">🕉️</span>
+              <span>ಶ್ರೀಮದ್ ಭಗವದ್ಗೀತೆ · Srimad Bhagavad Gita</span>
+            </motion.div>
 
-          <motion.h1 
-            className="text-5xl md:text-7xl font-bold mb-3 tracking-tight hero-title-animated overflow-visible"
-            style={{ WebkitBoxDecorationBreak: "clone" }}
-            initial={{ opacity: 0, y: -24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.85, ease: "easeOut" }}
-          >
-            ಶ್ರೀಮದ್ ಭಗವದ್ಗೀತೆ
-          </motion.h1>
-          <motion.h2 
-            className="text-xl md:text-2xl text-muted-foreground font-serif mb-5 tracking-wide"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            The Eternal Song of the Divine
-          </motion.h2>
-          <motion.p 
-            className="text-base md:text-lg text-foreground/75 max-w-2xl mx-auto leading-relaxed mb-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.45 }}
-          >
-            Explore the divine dialogue between Lord Krishna and Arjuna — 18 chapters, 700 verses of eternal wisdom on life, duty, and devotion.
-          </motion.p>
-
-          {/* Majestic Arched Chariot Portal */}
-          <motion.div
-            className="relative w-full max-w-lg mx-auto mb-8 rounded-t-[140px] rounded-b-3xl overflow-hidden border-2 border-primary/35 shadow-[0_0_35px_rgba(245,158,11,0.18)] bg-card/45 backdrop-blur-md p-2 hover:border-primary/50 transition-colors duration-300"
-            initial={{ opacity: 0, scale: 0.92, y: 15 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-          >
-            <div className="relative aspect-[16/10] w-full rounded-t-[132px] rounded-b-2xl overflow-hidden shadow-inner">
-              <img 
-                src="/kurukshetra_chariot.png" 
-                alt="Lord Krishna guiding Arjuna on the chariot in Kurukshetra"
-                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105 select-none"
-                draggable={false}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent pointer-events-none" />
-              
-              {/* Floating golden badge */}
-              <div className="absolute bottom-4 left-0 right-0 px-6 text-center pointer-events-none">
-                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-amber-400 bg-black/75 px-4 py-1.5 rounded-full border border-amber-500/25 backdrop-blur-sm shadow-md">
-                  Kurukshetra Dialogues · ಕುರುಕ್ಷೇತ್ರ ಸಂವಾದ
-                </span>
-              </div>
+            <div className="space-y-2 w-full">
+              <motion.h1 
+                className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight hero-title-animated overflow-visible text-center lg:text-left"
+                style={{ WebkitBoxDecorationBreak: "clone" }}
+                initial={{ opacity: 0, y: -24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.85, ease: "easeOut" }}
+              >
+                ಶ್ರೀಮದ್ ಭಗವದ್ಗೀತೆ
+              </motion.h1>
+              <motion.h2 
+                className="text-lg md:text-xl lg:text-2xl text-muted-foreground font-serif tracking-wide text-center lg:text-left"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+              >
+                The Eternal Song of the Divine
+              </motion.h2>
             </div>
-          </motion.div>
 
-          {/* CTA Row */}
-          <motion.div
-            className="flex flex-wrap gap-3 justify-center mb-8"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.65 }}
-          >
-            <Link href="/chat" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm shadow-lg btn-shimmer btn-glow divine-ripple cursor-pointer">
-              <span>🙏</span> Ask Krishna
-            </Link>
-            <Link href="/pravachana" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-primary/40 text-primary font-bold text-sm shadow-md hover:bg-primary/20 transition-all divine-ripple cursor-pointer">
-              <Music className="h-4 w-4 animate-pulse text-amber-500" /> Listen Gita (Audio)
-            </Link>
-            <Link href="/chapters" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-primary/30 bg-card/70 text-primary font-bold text-sm shadow-sm hover:bg-primary/10 transition-all divine-ripple cursor-pointer">
-              <BookOpen className="h-4 w-4" /> Read Chapters
-            </Link>
-          </motion.div>
+            <motion.p 
+              className="text-xs md:text-sm lg:text-base text-foreground/75 leading-relaxed max-w-xl text-center lg:text-left"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.45 }}
+            >
+              Explore the divine dialogue between Lord Krishna and Arjuna — 18 chapters, 700 verses of eternal wisdom on life, duty, and devotion.
+            </motion.p>
+
+            {/* CTA Row */}
+            <motion.div
+              className="flex flex-wrap gap-2.5 justify-center lg:justify-start w-full"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.65 }}
+            >
+              <Link href="/chat" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xs shadow-lg btn-shimmer btn-glow divine-ripple cursor-pointer">
+                <span>🙏</span> Ask Krishna
+              </Link>
+              <Link href="/pravachana" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-primary/40 text-primary font-bold text-xs shadow-md hover:bg-primary/20 transition-all divine-ripple cursor-pointer">
+                <Music className="h-3.5 w-3.5 animate-pulse text-amber-500" /> Listen Gita (Audio)
+              </Link>
+              <Link href="/chapters" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-primary/30 bg-card/70 text-primary font-bold text-xs shadow-sm hover:bg-primary/10 transition-all divine-ripple cursor-pointer">
+                <BookOpen className="h-3.5 w-3.5" /> Read Chapters
+              </Link>
+            </motion.div>
+
+            {/* Statistics Grid */}
+            <motion.div 
+              className="grid grid-cols-3 gap-3 w-full max-w-md pt-2"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+            >
+              <div className="text-center p-3 rounded-2xl stat-badge shadow-md cursor-default">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mx-auto mb-1 shadow-sm">
+                  <BookOpen className="h-3.5 w-3.5 text-white" />
+                </div>
+                <div className="text-lg md:text-xl font-bold text-gradient-gold">18</div>
+                <div className="text-[10px] text-muted-foreground font-sans uppercase tracking-wide">Chapters</div>
+              </div>
+              <div className="text-center p-3 rounded-2xl stat-badge shadow-md cursor-default">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center mx-auto mb-1 shadow-sm">
+                  <BookOpenCheck className="h-3.5 w-3.5 text-white" />
+                </div>
+                <div className="text-lg md:text-xl font-bold text-gradient-gold">700</div>
+                <div className="text-[10px] text-muted-foreground font-sans uppercase tracking-wide">Verses</div>
+              </div>
+              <div className="text-center p-3 rounded-2xl stat-badge shadow-md cursor-default">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mx-auto mb-1 shadow-sm">
+                  <Sparkles className="h-3.5 w-3.5 text-white" />
+                </div>
+                <div className="text-lg md:text-xl font-bold text-gradient-gold">∞</div>
+                <div className="text-[10px] text-muted-foreground font-sans uppercase tracking-wide">Wisdom</div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Right Column: Compact Floating Chariot Portal */}
+          <div className="lg:col-span-5 flex justify-center items-center w-full relative">
+            
+            {/* Small active halo spinning directly behind the transparent image */}
+            <div className="absolute w-[280px] h-[280px] sm:w-[340px] sm:h-[340px] pointer-events-none select-none opacity-45 -z-10">
+              <motion.div
+                className="w-full h-full"
+                animate={{ 
+                  rotate: 360 
+                }}
+                transition={{ 
+                  duration: 20, 
+                  repeat: Infinity, 
+                  ease: "linear" 
+                }}
+              >
+                <div className="w-full h-full flex items-center justify-center relative">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(245,158,11,0.22)_0%,transparent_75%)] animate-pulse" />
+                  <svg className="w-full h-full text-amber-500/25 stroke-current stroke-[0.55]" viewBox="0 0 100 100">
+                    {Array.from({ length: 36 }).map((_, i) => (
+                      <line 
+                        key={i} 
+                        x1="50" 
+                        y1="50" 
+                        x2={50 + 45 * Math.cos((i * 10 * Math.PI) / 180)} 
+                        y2={50 + 45 * Math.sin((i * 10 * Math.PI) / 180)} 
+                      />
+                    ))}
+                  </svg>
+                </div>
+              </motion.div>
+            </div>
+
+            <motion.div
+              className="relative w-full max-w-[260px] sm:max-w-xs md:max-w-sm rounded-t-[120px] rounded-b-3xl overflow-hidden border-2 border-primary/20 bg-card/10 backdrop-blur-xs p-1.5 hover:border-primary/45 transition-colors duration-300 select-none z-10"
+              initial={{ opacity: 0, scale: 0.92, y: 15 }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1,
+                y: [0, -8, 0],
+                rotate: [0, 0.5, -0.5, 0]
+              }}
+              transition={{ 
+                duration: 8, 
+                repeat: Infinity, 
+                ease: "easeInOut"
+              }}
+            >
+              <div className="relative aspect-[16/10] w-full rounded-t-[112px] rounded-b-2xl overflow-hidden shadow-inner bg-transparent">
+                <img 
+                  src="/kurukshetra_chariot.png" 
+                  alt="Lord Krishna guiding Arjuna on the chariot in Kurukshetra"
+                  className="w-full h-full object-cover opacity-75 dark:opacity-85 mix-blend-multiply dark:mix-blend-screen transition-all duration-700 hover:scale-105 select-none"
+                  draggable={false}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent pointer-events-none" />
+                
+                {/* Floating golden badge */}
+                <div className="absolute bottom-3 left-0 right-0 px-4 text-center pointer-events-none">
+                  <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-amber-500 bg-card/90 px-3.5 py-1 rounded-full border border-primary/20 backdrop-blur-xs shadow-md">
+                    Kurukshetra Dialogues · ಕುರುಕ್ಷೇತ್ರ ಸಂವಾದ
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
-
-        {/* Statistics Grid */}
-        <motion.div 
-          className="grid grid-cols-3 gap-3 md:gap-5 max-w-sm mx-auto mb-6 px-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-        >
-          <div className="text-center p-4 rounded-2xl stat-badge shadow-md cursor-default">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mx-auto mb-2 shadow-sm">
-              <BookOpen className="h-4 w-4 text-white" />
-            </div>
-            <div className="text-2xl md:text-3xl font-bold text-gradient-gold">18</div>
-            <div className="text-[10px] md:text-xs text-muted-foreground mt-0.5 font-sans uppercase tracking-wide">Chapters</div>
-          </div>
-          <div className="text-center p-4 rounded-2xl stat-badge shadow-md cursor-default">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center mx-auto mb-2 shadow-sm">
-              <BookOpenCheck className="h-4 w-4 text-white" />
-            </div>
-            <div className="text-2xl md:text-3xl font-bold text-gradient-gold">700</div>
-            <div className="text-[10px] md:text-xs text-muted-foreground mt-0.5 font-sans uppercase tracking-wide">Verses</div>
-          </div>
-          <div className="text-center p-4 rounded-2xl stat-badge shadow-md cursor-default">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mx-auto mb-2 shadow-sm">
-              <Sparkles className="h-4 w-4 text-white" />
-            </div>
-            <div className="text-2xl md:text-3xl font-bold text-gradient-gold">∞</div>
-            <div className="text-[10px] md:text-xs text-muted-foreground mt-0.5 font-sans uppercase tracking-wide">Wisdom</div>
-          </div>
-        </motion.div>
-
-        {/* Listen Gita Spotlight Banner */}
-        <motion.div
-          className="max-w-2xl mx-auto px-4 mt-8 mb-4"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-        >
-          <Link href="/pravachana" className="block group">
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-purple-500/5 border border-primary/30 p-5 sm:p-6 shadow-xl backdrop-blur-md transition-all duration-300 hover:border-primary/50 hover:shadow-primary/5 hover:-translate-y-1 text-left">
-              {/* Decorative elements */}
-              <div className="absolute -right-12 -top-12 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500" />
-              <div className="absolute -left-12 -bottom-12 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl" />
-
-              <div className="flex flex-col sm:flex-row items-center gap-5 relative z-10">
-                {/* Left: Interactive Playing Disc Graphic */}
-                <div className="relative shrink-0 flex items-center justify-center select-none">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-amber-500/30 p-1 flex items-center justify-center bg-card shadow-md">
-                    <motion.div 
-                      className="w-full h-full rounded-full bg-gradient-to-tr from-amber-950 to-amber-900 flex items-center justify-center"
-                      animate={{ rotate: 360 }}
-                      transition={{ ease: "linear", duration: 12, repeat: Infinity }}
-                    >
-                      <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
-                        <span className="text-[9px] text-white font-serif font-bold">ॐ</span>
-                      </div>
-                    </motion.div>
-                  </div>
-                  {/* Play Circle Overlay */}
-                  <div className="absolute inset-0 bg-black/10 rounded-full flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-md transition-transform duration-300 group-hover:scale-110">
-                      <Play className="h-4.5 w-4.5 fill-white text-white translate-x-0.5" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right: Content details */}
-                <div className="flex-1 text-center sm:text-left">
-                  <div className="divine-badge inline-flex items-center gap-1 mb-1.5">
-                    <Sparkles className="h-2.5 w-2.5" /> Devotional Feature
-                  </div>
-                  <h3 className="text-base sm:text-lg font-bold text-gradient-gold mb-0.5 leading-tight">
-                    Listen to Bhagavad Gita Kannada Pravachana
-                  </h3>
-                  <h4 className="text-[11px] font-serif font-bold text-foreground/80 mb-2">
-                    ಶ್ರೀಮದ್ ಭಗವದ್ಗೀತೆ ಪೂರ್ಣ ಆಡಿಯೋ ಶ್ರವಣ
-                  </h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed font-sans">
-                    Listen to the complete 18 chapters and 700 verses of the Bhagavad Gita in pure Kannada recitation. Experience the divine vibration of Yatharth Geeta.
-                  </p>
-                </div>
-              </div>
-
-              {/* Soundwave Animation */}
-              <div className="absolute bottom-3 right-5 flex gap-0.5 h-5 items-end pointer-events-none opacity-30 group-hover:opacity-80 transition-opacity">
-                <span className="w-0.5 bg-primary rounded-full transition-all duration-300 h-2 group-hover:h-3 group-hover:animate-pulse" style={{ animationDelay: "0s" }} />
-                <span className="w-0.5 bg-primary rounded-full transition-all duration-300 h-4 group-hover:h-5 group-hover:animate-pulse" style={{ animationDelay: "0.2s" }} />
-                <span className="w-0.5 bg-primary rounded-full transition-all duration-300 h-1.5 group-hover:h-3 group-hover:animate-pulse" style={{ animationDelay: "0.4s" }} />
-                <span className="w-0.5 bg-primary rounded-full transition-all duration-300 h-3 group-hover:h-4 group-hover:animate-pulse" style={{ animationDelay: "0.1s" }} />
-              </div>
-            </div>
-          </Link>
-        {/* Sadhana & Reading Streak Tracker Widget */}
-        <motion.div
-          className="max-w-2xl mx-auto px-4 mt-6 mb-6"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.85 }}
-        >
-          <div className="rounded-3xl bg-card border border-primary/20 p-5 shadow-xl backdrop-blur-md text-left relative overflow-hidden">
-            {/* Saffron background glow */}
-            <div className="absolute -right-24 -bottom-24 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
-                  <Flame className={`h-5.5 w-5.5 text-white ${sadhana.streakCount > 0 ? "animate-bounce" : ""}`} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-foreground leading-tight">Daily Reading Sadhana</h4>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="text-xs text-muted-foreground font-sans">Current Streak:</span>
-                    <span className="text-xs font-extrabold text-orange-500 font-sans flex items-center gap-0.5">
-                      {sadhana.streakCount} Days {sadhana.streakCount > 0 ? "🔥" : "🌱"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Progress Detail */}
-              <div className="w-full sm:w-auto shrink-0 flex flex-col sm:items-end gap-1 font-sans">
-                <div className="flex justify-between sm:justify-start items-center gap-2">
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Rank:</span>
-                  <span className="text-xs font-bold text-primary inline-flex items-center gap-1">
-                    <Trophy className="h-3.5 w-3.5 text-amber-500" />
-                    {sadhana.completedVerses.length >= 100 
-                      ? "Yogi • ಯೋಗಿ 🧘" 
-                      : sadhana.completedVerses.length >= 20 
-                      ? "Disciple • ಶಿಷ್ಯ 📖" 
-                      : sadhana.completedVerses.length >= 1 
-                      ? "Seeker • ಜಿಜ್ಞಾಸು 🪔" 
-                      : "Beginner • ಆರಂಭಿಕ 🌱"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="w-full sm:w-28 bg-muted h-2 rounded-full overflow-hidden">
-                    <div 
-                      className="bg-gradient-to-r from-amber-500 to-orange-500 h-full rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min(100, Math.max(0, (sadhana.completedVerses.length / 700) * 100))}%` }}
-                    />
-                  </div>
-                  <span className="text-xs font-bold text-foreground whitespace-nowrap leading-none">
-                    {sadhana.completedVerses.length}/700 Verses
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Gita Remedies Emotional Grid */}
-        <motion.div
-          className="max-w-2xl mx-auto px-4 mt-6 mb-2"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-        >
-          <div className="text-center mb-5">
-            <h3 className="text-lg font-bold text-foreground font-serif inline-flex items-center gap-1.5">
-              <Compass className="h-4.5 w-4.5 text-primary" />
-              Gita Remedies • ಗೀತಾ ಪರಿಹಾರಗಳು
-            </h3>
-            <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5">
-              What emotional challenge are you facing? Tap to receive Lord Krishna's guidance.
-            </p>
-            <span className="block text-[10px] text-muted-foreground italic mt-0.5">
-              ನಿಮಗಾಗುತ್ತಿರುವ ಅನುಭವವೇನು? ಶ್ರೀ ಕೃಷ್ಣನ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ಕ್ಲಿಕ್ ಮಾಡಿ.
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-            {EMOTIONS.map(emotion => {
-              const Icon = emotion.icon;
-              return (
-                <button
-                  key={emotion.id}
-                  onClick={() => setSelectedEmotion(emotion.id)}
-                  className={`p-3.5 rounded-2xl bg-gradient-to-br ${emotion.color} border hover:border-primary/50 hover:scale-105 active:scale-95 transition-all shadow-sm flex flex-col items-center justify-center text-center cursor-pointer min-h-24`}
-                >
-                  <Icon className="h-5 w-5 text-primary mb-2 shrink-0" />
-                  <span className="text-[10px] font-bold text-foreground leading-tight tracking-tight">
-                    {emotion.labelEn}
-                  </span>
-                  <span className="text-[9px] text-muted-foreground font-semibold leading-none mt-1">
-                    {emotion.labelKn}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </motion.div>
-      </motion.div>
-    </section>
+      </section>
 
       {/* Geo-Engine Location Banner */}
       <GeoWelcomeBanner />
 
       {/* Dynamic Search */}
       <SearchSection />
+
+      {/* Seeker Questions Carousel */}
+      <section className="max-w-4xl mx-auto px-4 mt-8 mb-4 relative z-20 font-sans text-center">
+        <h4 className="text-xs uppercase tracking-widest font-sans font-bold text-primary mb-3.5 flex items-center justify-center gap-1.5">
+          <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
+          Talk to Krishna AI · ಕೃಷ್ಣ ಸಂವಾದ
+        </h4>
+        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-primary/45 scrollbar-track-muted/10 px-2 justify-start md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
+          {SEEKER_PROMPTS.map((prompt, idx) => {
+            const Icon = prompt.icon;
+            return (
+              <Link 
+                key={idx} 
+                href={`/chat?q=${encodeURIComponent(prompt.textEn)}`}
+                className="shrink-0 w-64 md:w-auto p-4 rounded-2xl glass-card border border-primary/20 hover:border-primary/50 bg-card/65 backdrop-blur-sm shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 block text-left group cursor-pointer"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 shrink-0">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-1 flex-1">
+                    <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors leading-snug">
+                      "{prompt.textEn}"
+                    </p>
+                    <p className="text-[10px] text-muted-foreground italic font-sans leading-tight">
+                      "{prompt.textKn}"
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-3 text-[10px] text-primary font-bold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span>Ask Krishna</span>
+                  <ArrowRight className="h-3 w-3" />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
 
       {/* Path Selector Filter */}
       <div className="space-y-4 mb-6 mt-8 px-4 relative z-20 max-w-3xl mx-auto text-center font-sans">
@@ -1312,39 +1291,6 @@ export default function Home() {
           )}
         </AnimatePresence>
       </div>
-
-      {/* Verse of the Day */}
-      <VerseOfTheDay />
-
-      {/* What You'll Discover */}
-      <section className="py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto mb-6 relative z-10 text-center font-sans">
-        <h3 className="text-2xl font-bold mb-8">
-          What You'll <span className="text-primary">Discover</span>
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="p-6 rounded-2xl glass-card flex flex-col items-center text-center cursor-default">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-4 text-white shadow-md">
-              <Globe className="h-6 w-6" />
-            </div>
-            <h4 className="font-bold text-base mb-2">Universal Truths</h4>
-            <p className="text-xs text-muted-foreground leading-relaxed">Timeless principles for all aspects of life, duty, and spiritual action.</p>
-          </div>
-          <div className="p-6 rounded-2xl glass-card flex flex-col items-center text-center cursor-default">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-4 text-white shadow-md">
-              <Heart className="h-6 w-6" />
-            </div>
-            <h4 className="font-bold text-base mb-2">Spiritual Guidance</h4>
-            <p className="text-xs text-muted-foreground leading-relaxed">Pathways to inner peace, devotion, self-realization, and devotion.</p>
-          </div>
-          <div className="p-6 rounded-2xl glass-card flex flex-col items-center text-center cursor-default">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center mb-4 text-white shadow-md">
-              <Flame className="h-6 w-6" />
-            </div>
-            <h4 className="font-bold text-base mb-2">Eternal Wisdom</h4>
-            <p className="text-xs text-muted-foreground leading-relaxed">Ancient spiritual knowledge structured for application in modern living.</p>
-          </div>
-        </div>
-      </section>
 
       {/* Chapters Grid Section */}
       <main className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 relative z-10">
@@ -1416,6 +1362,274 @@ export default function Home() {
           ))}
         </motion.div>
       </main>
+
+      {/* Daily Reading Sadhana & Streak Tracker Widget */}
+      <motion.div
+        className="max-w-2xl mx-auto px-4 mt-6 mb-6"
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.85 }}
+      >
+        <div className="rounded-3xl bg-card border border-primary/20 p-5 shadow-xl backdrop-blur-md text-left relative overflow-hidden">
+          {/* Saffron background glow */}
+          <div className="absolute -right-24 -bottom-24 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
+                <Flame className={`h-5.5 w-5.5 text-white ${sadhana.streakCount > 0 ? "animate-bounce" : ""}`} />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-foreground leading-tight">Daily Reading Sadhana</h4>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-xs text-muted-foreground font-sans">Current Streak:</span>
+                  <span className="text-xs font-extrabold text-orange-500 font-sans flex items-center gap-0.5">
+                    {sadhana.streakCount} Days {sadhana.streakCount > 0 ? "🔥" : "🌱"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Progress Detail */}
+            <div className="w-full sm:w-auto shrink-0 flex flex-col sm:items-end gap-1 font-sans">
+              <div className="flex justify-between sm:justify-start items-center gap-2">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Rank:</span>
+                <span className="text-xs font-bold text-primary inline-flex items-center gap-1">
+                  <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                  {sadhana.completedVerses.length >= 100 
+                    ? "Yogi • ಯೋಗಿ 🧘" 
+                    : sadhana.completedVerses.length >= 20 
+                    ? "Disciple • ಶಿಷ್ಯ 📖" 
+                    : sadhana.completedVerses.length >= 1 
+                    ? "Seeker • ಜಿಜ್ಞಾಸು 🪔" 
+                    : "Beginner • ಆರಂಭಿಕ 🌱"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-full sm:w-28 bg-muted h-2 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-gradient-to-r from-amber-500 to-orange-500 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(100, Math.max(0, (sadhana.completedVerses.length / 700) * 100))}%` }}
+                  />
+                </div>
+                <span className="text-xs font-bold text-foreground whitespace-nowrap leading-none">
+                  {sadhana.completedVerses.length}/700 Verses
+                </span>
+              </div>
+            </div>
+            
+            {/* Resume Reading CTA */}
+            <div className="mt-5 pt-4 border-t border-primary/20 flex flex-col sm:flex-row justify-between items-center gap-3">
+              <p className="text-[11px] text-muted-foreground font-sans">
+                Continue your daily habit of reading one sloka.
+              </p>
+              <Link href={`/chapter/${getNextUnreadVerse().chapterId}/verse/${getNextUnreadVerse().verseIndex}`}>
+                <Button className="py-2 px-4 bg-primary hover:bg-primary/95 text-white font-extrabold text-[11px] rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+                  <BookOpen className="h-3.5 w-3.5" />
+                  <span>Resume Reading (Ch {getNextUnreadVerse().chapterId}.{getNextUnreadVerse().verseIndex})</span>
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Listen Gita Spotlight Banner */}
+      <motion.div
+        className="max-w-2xl mx-auto px-4 mt-8 mb-4"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.8, duration: 0.5 }}
+      >
+        <Link href="/pravachana" className="block group">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-purple-500/5 border border-primary/30 p-5 sm:p-6 shadow-xl backdrop-blur-md transition-all duration-300 hover:border-primary/50 hover:shadow-primary/5 hover:-translate-y-1 text-left">
+            {/* Decorative elements */}
+            <div className="absolute -right-12 -top-12 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500" />
+            <div className="absolute -left-12 -bottom-12 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl" />
+
+            <div className="flex flex-col sm:flex-row items-center gap-5 relative z-10">
+              {/* Left: Interactive Playing Disc Graphic */}
+              <div className="relative shrink-0 flex items-center justify-center select-none">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-amber-500/30 p-1 flex items-center justify-center bg-card shadow-md">
+                  <motion.div 
+                    className="w-full h-full rounded-full bg-gradient-to-tr from-amber-950 to-amber-900 flex items-center justify-center"
+                    animate={{ rotate: 360 }}
+                    transition={{ ease: "linear", duration: 12, repeat: Infinity }}
+                  >
+                    <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
+                      <span className="text-[9px] text-white font-serif font-bold">ॐ</span>
+                    </div>
+                  </motion.div>
+                </div>
+                {/* Play Circle Overlay */}
+                <div className="absolute inset-0 bg-black/10 rounded-full flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-md transition-transform duration-300 group-hover:scale-110">
+                    <Play className="h-4.5 w-4.5 fill-white text-white translate-x-0.5" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Content details */}
+              <div className="flex-1 text-center sm:text-left">
+                <div className="divine-badge inline-flex items-center gap-1 mb-1.5">
+                  <Sparkles className="h-2.5 w-2.5" /> Devotional Feature
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-gradient-gold mb-0.5 leading-tight">
+                  Listen to Bhagavad Gita Kannada Pravachana
+                </h3>
+                <h4 className="text-[11px] font-serif font-bold text-foreground/80 mb-2">
+                  ಶ್ರೀಮದ್ ಭಗವದ್ಗೀತೆ ಪೂರ್ಣ ಆಡಿಯೋ ಶ್ರವಣ
+                </h4>
+                <p className="text-xs text-muted-foreground leading-relaxed font-sans">
+                  Listen to the complete 18 chapters and 700 verses of the Bhagavad Gita in pure Kannada recitation. Experience the divine vibration of Yatharth Geeta.
+                </p>
+              </div>
+            </div>
+
+            {/* Soundwave Animation */}
+            <div className="absolute bottom-3 right-5 flex gap-0.5 h-5 items-end pointer-events-none opacity-30 group-hover:opacity-80 transition-opacity">
+              <span className="w-0.5 bg-primary rounded-full transition-all duration-300 h-2 group-hover:h-3 group-hover:animate-pulse" style={{ animationDelay: "0s" }} />
+              <span className="w-0.5 bg-primary rounded-full transition-all duration-300 h-4 group-hover:h-5 group-hover:animate-pulse" style={{ animationDelay: "0.2s" }} />
+              <span className="w-0.5 bg-primary rounded-full transition-all duration-300 h-1.5 group-hover:h-3 group-hover:animate-pulse" style={{ animationDelay: "0.4s" }} />
+              <span className="w-0.5 bg-primary rounded-full transition-all duration-300 h-3 group-hover:h-4 group-hover:animate-pulse" style={{ animationDelay: "0.1s" }} />
+            </div>
+          </div>
+        </Link>
+      </motion.div>
+
+      {/* Gita Remedies Emotional Grid */}
+      <motion.div
+        className="max-w-2xl mx-auto px-4 mt-6 mb-2"
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.9 }}
+      >
+        <div className="text-center mb-5">
+          <h3 className="text-lg font-bold text-foreground font-serif inline-flex items-center gap-1.5">
+            <Compass className="h-4.5 w-4.5 text-primary" />
+            Gita Remedies • ಗೀತಾ ಪರಿಹಾರಗಳು
+          </h3>
+          <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5">
+            What emotional challenge are you facing? Tap to receive Lord Krishna's guidance.
+          </p>
+          <span className="block text-[10px] text-muted-foreground italic mt-0.5">
+            ನಿಮಗಾಗುತ್ತಿರುವ ಅನುಭವವೇನು? ಶ್ರೀ ಕೃಷ್ಣನ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ಕ್ಲಿಕ್ ಮಾಡಿ.
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+          {EMOTIONS.map(emotion => {
+            const Icon = emotion.icon;
+            return (
+              <button
+                key={emotion.id}
+                onClick={() => setSelectedEmotion(emotion.id)}
+                className={`p-3.5 rounded-2xl bg-gradient-to-br ${emotion.color} border hover:border-primary/50 hover:scale-105 active:scale-95 transition-all shadow-sm flex flex-col items-center justify-center text-center cursor-pointer min-h-24`}
+              >
+                <Icon className="h-5 w-5 text-primary mb-2 shrink-0" />
+                <span className="text-[10px] font-bold text-foreground leading-tight tracking-tight">
+                  {emotion.labelEn}
+                </span>
+                <span className="text-[9px] text-muted-foreground font-semibold leading-none mt-1">
+                  {emotion.labelKn}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </motion.div>
+
+      {/* Dharma Referral Card Section */}
+      <section className="py-10 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto mb-10 relative z-10 text-center font-sans">
+        <motion.div 
+          className="p-6 md:p-8 rounded-3xl bg-gradient-to-br from-card/90 via-primary/5 to-card/90 border-2 border-primary/20 hover:border-primary/45 shadow-2xl relative overflow-hidden text-left"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="absolute -right-24 -top-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+            <div className="space-y-3 max-w-lg">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold font-sans">
+                <Sparkles className="h-3 w-3" /> Dharma Prachara · ಧರ್ಮ ಪ್ರಚಾರ
+              </div>
+              
+              <h3 className="text-xl md:text-2xl font-extrabold text-foreground leading-tight tracking-tight">
+                Share Lord Krishna's Wisdom (Spread the Light)
+              </h3>
+              
+              <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                Lord Krishna says in the Gita (18.68): <em>"He who shares this supreme secret among My devotees will attain Me without a doubt."</em> Share the platform with your family and friends to spread the message of Dharma.
+              </p>
+              
+              <div className="flex flex-wrap items-center gap-3 pt-1 text-[11px] font-sans">
+                <span className="text-muted-foreground font-semibold">Your Rank:</span>
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-bold shadow-md transition-all duration-300 ${getDharmaRank().badgeColor}`}>
+                  {getDharmaRank().title}
+                </span>
+                <span className="text-orange-500 font-extrabold ml-1">
+                  ({shareCount} Share Points 🔥)
+                </span>
+              </div>
+            </div>
+            
+            <div className="shrink-0 w-full md:w-auto flex flex-col sm:flex-row md:flex-col gap-3 justify-center">
+              <button 
+                onClick={() => handleShare("whatsapp")}
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold font-sans transition-all justify-center shadow-lg active:scale-95 cursor-pointer divine-ripple"
+              >
+                <svg className="h-4.5 w-4.5 fill-white shrink-0" viewBox="0 0 24 24">
+                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.458L0 24zm6.242-4.054c1.667.989 3.29 1.562 5.672 1.563 5.361 0 9.721-4.305 9.723-9.599.002-2.564-1.002-4.976-2.827-6.804C17.042 3.277 14.629 2.274 12.01 2.27c-5.368 0-9.73 4.306-9.733 9.601-.001 2.228.616 4.354 1.785 6.182L3.08 21.6l3.782-1.082l-.563-.572z"/>
+                </svg>
+                <span className="text-xs text-white">Share on WhatsApp</span>
+              </button>
+              
+              <button 
+                onClick={() => handleShare("copy")}
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-card border border-primary/20 hover:border-primary/45 text-primary font-bold font-sans transition-all justify-center shadow-md active:scale-95 cursor-pointer hover:bg-primary/5"
+              >
+                <Bookmark className="h-4 w-4" />
+                <span className="text-xs">Copy Share Link</span>
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Verse of the Day */}
+      <VerseOfTheDay />
+
+      {/* What You'll Discover */}
+      <section className="py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto mb-6 relative z-10 text-center font-sans">
+        <h3 className="text-2xl font-bold mb-8">
+          What You'll <span className="text-primary">Discover</span>
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="p-6 rounded-2xl glass-card flex flex-col items-center text-center cursor-default">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-4 text-white shadow-md">
+              <Globe className="h-6 w-6" />
+            </div>
+            <h4 className="font-bold text-base mb-2">Universal Truths</h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">Timeless principles for all aspects of life, duty, and spiritual action.</p>
+          </div>
+          <div className="p-6 rounded-2xl glass-card flex flex-col items-center text-center cursor-default">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-4 text-white shadow-md">
+              <Heart className="h-6 w-6" />
+            </div>
+            <h4 className="font-bold text-base mb-2">Spiritual Guidance</h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">Pathways to inner peace, devotion, self-realization, and devotion.</p>
+          </div>
+          <div className="p-6 rounded-2xl glass-card flex flex-col items-center text-center cursor-default">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center mb-4 text-white shadow-md">
+              <Flame className="h-6 w-6" />
+            </div>
+            <h4 className="font-bold text-base mb-2">Eternal Wisdom</h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">Ancient spiritual knowledge structured for application in modern living.</p>
+          </div>
+        </div>
+      </section>
 
       {/* Interactive Hub Section (Guidance & Quiz) */}
       <section className="py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto relative z-10 text-center font-sans grid grid-cols-1 md:grid-cols-2 gap-8">

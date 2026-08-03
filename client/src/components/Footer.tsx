@@ -17,20 +17,32 @@ export default function Footer() {
       }
     } catch (_) {}
 
-    // 2. Query visits API
-    fetch(`/api/visits?new=${isNewVisitor}`)
-      .then(res => {
+    // 2. Query persistent global counter API
+    const pageViewsUrl = "https://abacus.jasoncameron.dev/hit/bhagavad_gita_kannada_app/pageViews";
+    const visitorsUrl = isNewVisitor
+      ? "https://abacus.jasoncameron.dev/hit/bhagavad_gita_kannada_app/visitors"
+      : "https://abacus.jasoncameron.dev/get/bhagavad_gita_kannada_app/visitors";
+
+    Promise.all([
+      fetch(pageViewsUrl).then(res => {
         if (res.status === 200) return res.json();
-        throw new Error("API offline");
+        throw new Error();
+      }),
+      fetch(visitorsUrl).then(res => {
+        if (res.status === 200) return res.json();
+        throw new Error();
       })
-      .then(data => {
-        if (data && typeof data.visitors === "number") {
-          setVisitorsCount(data.visitors);
-          setPageViewsCount(data.pageViews);
+    ])
+      .then(([pvData, vData]) => {
+        if (pvData && typeof pvData.value === "number") {
+          setPageViewsCount(pvData.value);
+        }
+        if (vData && typeof vData.value === "number") {
+          setVisitorsCount(vData.value);
         }
       })
       .catch(() => {
-        // Fallback for static deployment
+        // Fallback for offline/static deployment
         try {
           const savedVisits = localStorage.getItem("gita_visits_data_v2");
           if (savedVisits) {

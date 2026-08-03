@@ -36,6 +36,13 @@ const allowlist = [
 async function buildAll() {
   await rm("dist", { recursive: true, force: true });
 
+  try {
+    const { generateSitemap } = await import("./generate-sitemap");
+    generateSitemap();
+  } catch (e) {
+    console.error("Failed to generate sitemap dynamically:", e);
+  }
+
   console.log("building client...");
   await viteBuild();
 
